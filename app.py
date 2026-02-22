@@ -184,6 +184,14 @@ except Exception:
 def index():
     return render_template('index.html')
 
+@app.after_request
+def add_header(response):
+    if request.path.startswith('/api/'):
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
+
 from functools import wraps
 
 def role_required(roles):
@@ -255,6 +263,7 @@ def login():
 @app.route('/api/admin/users', methods=['GET'])
 @role_required('master')
 def list_users():
+    print("Listing system users...")
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('SELECT id, username, role, full_name, is_active FROM users')
@@ -264,6 +273,7 @@ def list_users():
     users = []
     for r in rows:
         users.append({'id': r[0], 'username': r[1], 'role': r[2], 'full_name': r[3], 'is_active': bool(r[4])})
+    print(f"Found {len(users)} users.")
     return jsonify({'success': True, 'data': users})
 
 @app.route('/api/admin/users', methods=['POST'])
@@ -275,18 +285,26 @@ def create_user():
     role = data.get('role', 'suporte')
     full_name = data.get('full_name')
     
+    print(f"Creating new user: {username} (Role: {role}, Name: {full_name})")
+    
     if not username or not password:
+        print("Error: Username and password are required.")
         return jsonify({'success': False, 'error': 'Usuário e senha são obrigatórios'}), 400
         
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        cursor.execute('INSERT INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)',
+        cursor.execute('INSERT INTO users (username, password, role, full_name, is_active) VALUES (?, ?, ?, ?, 1)',
                        (username, password, role, full_name))
         conn.commit()
+        print(f"User {username} created successfully in database.")
         return jsonify({'success': True})
-    except sqlite3.IntegrityError:
+    except sqlite3.IntegrityError as e:
+        print(f"Integrity Error: {e}")
         return jsonify({'success': False, 'error': 'Usuário já existe'}), 400
+    except Exception as e:
+        print(f"Unexpected error creating user: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
     finally:
         conn.close()
 

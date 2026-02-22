@@ -14,6 +14,7 @@ let currentUser = {
   fullName: ''
 };
 let visibleColumns = new Set(['data', 'tipo', 'unidade', 'item_defeito']);
+let selectedListCategory = 'unidades';
 
 // ============================================================
 // INIT
@@ -602,18 +603,9 @@ async function toggleConfig() {
   config.classList.remove('hidden');
   updateNavActive('btnNavConfig');
 
-  let ok = false;
-  if (currentUser && currentUser.username) {
-    ok = true;
-  } else {
-    ok = await checkServerAuth();
-  }
-
+  const ok = await checkServerAuth();
   if (ok) {
     showConfigMain();
-    if (typeof selectListCategory === 'function') {
-      selectListCategory('unidades');
-    }
     applyRbacUI();
   } else {
     showConfigLogin();
@@ -739,7 +731,7 @@ async function onAfterLogin() {
  */
 async function checkServerAuth() {
   try {
-    const res = await fetch('/api/me');
+    const res = await fetch('/api/me', { cache: 'no-store' });
     if (res.status === 401) {
       if (currentUser) {
         currentUser.username = '';
@@ -1196,11 +1188,25 @@ function showConfigMain() {
   document.getElementById('configLoginSection').classList.add('hidden');
   document.getElementById('configMainSection').classList.remove('hidden');
 
-  // Default to units if not restoring another view
   const activeBtn = document.querySelector('.list-cat-btn.active');
-  if (!activeBtn || activeBtn.id === 'btnCatUsers' || activeBtn.id === 'btnCatProfile') {
+  if (!activeBtn) {
     selectListCategory('unidades');
+    return;
+  }
+
+  // Refresh current view based on active sidebar button
+  if (activeBtn.id === 'btnCatUsers') {
+    fetchUsers();
+  } else if (activeBtn.id === 'btnCatProfile') {
+    showProfileView();
+  } else if (activeBtn.id === 'btnCatManage') {
+    showManageView();
+  } else if (activeBtn.id === 'btnCatLegacy') {
+    showLegacyView();
+  } else if (activeBtn.id === 'btnCatBackup') {
+    showBackupSettings();
   } else {
+    // If it's a list category
     renderListManagement();
   }
 }
