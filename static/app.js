@@ -537,6 +537,18 @@ function toggleAppMode() {
 async function initApp() {
   console.log('Iniciando aplicativo...');
 
+  // Check auth first
+  const authed = await checkServerAuth();
+  if (!authed) {
+    document.getElementById('globalLoginSection').classList.remove('hidden');
+    document.getElementById('appContent').classList.add('hidden');
+    return;
+  }
+
+  // If authed, show app and load data
+  document.getElementById('globalLoginSection').classList.add('hidden');
+  document.getElementById('appContent').classList.remove('hidden');
+
   // Set default date to today
   const dataInput = document.getElementById('data');
   if (dataInput && !dataInput.value) {
@@ -544,11 +556,11 @@ async function initApp() {
     dataInput.value = today.toISOString().split('T')[0];
   }
 
-  // Load backend data
+  // Load backend data ONLY after auth
   await loadTasyData();
   await populateFormOptions();
 
-  addEquipamento();
+  if (equipCount === 0) addEquipamento();
   fetchNextLaudoNum();
 }
 
@@ -715,13 +727,11 @@ function toggleDashboard() {
   if (isHiding) {
     dashPage.classList.add('hidden');
     generator.classList.remove('hidden');
-    header.classList.remove('hidden');
     populateFormOptions();
   } else {
     if (configPage) configPage.classList.add('hidden');
     dashPage.classList.remove('hidden');
     generator.classList.add('hidden');
-    header.classList.add('hidden');
     checkServerAuth().then(ok => {
       if (ok) showStatsSection();
       else showLoginSection();
@@ -746,20 +756,17 @@ function toggleConfig() {
   const configPage = document.getElementById('configPage');
   const dashPage = document.getElementById('dashboardPage');
   const generator = document.getElementById('mainGenerator');
-  const header = document.querySelector('.app-header');
 
   const isShowing = !configPage.classList.contains('hidden');
 
   if (isShowing) {
     configPage.classList.add('hidden');
     generator.classList.remove('hidden');
-    header.classList.remove('hidden');
     populateFormOptions();
   } else {
     if (dashPage) dashPage.classList.add('hidden');
     configPage.classList.remove('hidden');
     generator.classList.add('hidden');
-    header.classList.add('hidden');
     checkServerAuth().then(ok => {
       if (ok) {
         showConfigMain();
@@ -809,39 +816,6 @@ function applyRbacUI() {
   // These are often dynamic, so we'll check role in render functions too
 }
 
-/**
- * Authentication check with the server
- */
-async function checkServerAuth() {
-  try {
-    const res = await fetch('/api/stats'); // Re-using stats as a check
-    const data = await res.json();
-
-    // If stats succeeded, we are logged in.
-    // The previous app didn't return user info in stats, but our new backend might if we want.
-    // However, login already sets currentUser. 
-    // If we refresh the page, we might need a /api/me endpoint.
-
-    if (data.success) {
-      // For now, if we don't have a /api/me, we assume the session is valid.
-      // We should really have a /api/me to restore role on refresh.
-      if (!currentUser.role) {
-        // Fallback/Restore: Fetch user info if missing
-        await restoreSession();
-      }
-      return true;
-    }
-    return false;
-  } catch (err) {
-    return false;
-  }
-}
-
-async function restoreSession() {
-  // Since login returns user info, we usually have it.
-  // On F5, we lost JS state. Let's add a simple endpoint or use another check.
-  // For now, I'll assume login is the primary way and stats just checks if session exists.
-}
 
 /**
  * Lists Management Logic
@@ -1133,67 +1107,109 @@ function showProfileView() {
 }
 
 
-/**
- * Check auth state directly with server (avoids stale localStorage).
- */
 async function checkServerAuth() {
   try {
-    const res = await fetch('/api/stats');
-    return res.status !== 401;
-  } catch {
+    const res = await fetch('/api/login');
+    if (res.status === 200) {
+      const data = await res.json();
+      if (data.success) {
+        currentUser = {
+          username: data.username,
+          role: data.role,
+          fullName: data.full_name
+        };
+        updateUserUI(data);
+        return true;
+      }
+    }
+    return false;
+  } catch (err) {
     return false;
   }
+}
+
+function updateUserUI(data) {
+  const nameDisp = document.getElementById('userNameDisplay');
+  const roleDisp = document.getElementById('userRoleDisplay');
+  if (nameDisp) nameDisp.textContent = data.full_name || data.username;
+  if (roleDisp) {
+    roleDisp.textContent = data.role.toUpperCase();
+    roleDisp.className = `badge-role ${data.role}`;
+  }
+}
+
+async function restoreSession() {
+  await checkServerAuth();
+}
+
+/**
+ * Shared Login Success Logic
+ */
+function onLoginSuccess(data) {
+  currentUser = {
+    username: data.username,
+    role: data.role,
+    fullName: data.full_name
+  };
+  localStorage.setItem('isLoggedIn', 'true');
+
+  // Update Header
+  const nameDisp = document.getElementById('userNameDisplay');
+  const roleDisp = document.getElementById('userRoleDisplay');
+  if (nameDisp) nameDisp.textContent = data.full_name || data.username;
+  if (roleDisp) {
+    roleDisp.textContent = data.role.toUpperCase();
+    roleDisp.className = `badge-role ${data.role}`;
+  }
+
+  // Hide login, show app
+  document.getElementById('globalLoginSection').classList.add('hidden');
+  document.getElementById('appContent').classList.remove('hidden');
+
+  // Trigger data load
+  // IMPORTANT: Do NOT call initApp again as it creates an infinite loop if initApp calls checkServerAuth
+  onAfterLogin();
+
+  applyRbacUI();
+}
+
+async function onAfterLogin() {
+  // Load backend data ONLY after auth confirmed
+  await loadTasyData();
+  await populateFormOptions();
+
+  if (equipCount === 0) addEquipamento();
+  fetchNextLaudoNum();
+}
+
+async function handleGlobalLogin() {
+  const user = document.getElementById('globalUsername').value;
+  const pass = document.getElementById('globalPassword').value;
+  await performLogin(user, pass);
 }
 
 async function handleLogin() {
   const user = document.getElementById('username').value;
   const pass = document.getElementById('password').value;
-
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: user, password: pass })
-    });
-    const data = await res.json();
-    if (data.success) {
-      currentUser = {
-        username: data.username,
-        role: data.role,
-        fullName: data.full_name
-      };
-      localStorage.setItem('isLoggedIn', 'true');
-      showStatsSection();
-      applyRbacUI();
-      showToast(`Bem-vindo, ${data.full_name || data.username}!`, 'success');
-    } else {
-      showToast(data.error || 'Erro ao logar', 'error');
-    }
-  } catch (err) {
-    showToast('Erro de conexão', 'error');
-  }
+  await performLogin(user, pass);
 }
 
 async function handleConfigLogin() {
   const user = document.getElementById('configUsername').value;
   const pass = document.getElementById('configPassword').value;
+  await performLogin(user, pass);
+}
 
+async function performLogin(username, password) {
   try {
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: user, password: pass })
+      body: JSON.stringify({ username, password })
     });
     const data = await res.json();
     if (data.success) {
-      currentUser = {
-        username: data.username,
-        role: data.role,
-        fullName: data.full_name
-      };
-      localStorage.setItem('isLoggedIn', 'true');
-      showConfigMain();
-      applyRbacUI();
+      onLoginSuccess(data);
       showToast('Login realizado com sucesso!', 'success');
     } else {
       showToast(data.error || 'Erro ao logar', 'error');
@@ -1204,17 +1220,25 @@ async function handleConfigLogin() {
 }
 
 async function handleLogout() {
-  await fetch('/api/logout');
-  localStorage.setItem('isLoggedIn', 'false');
-  // If dashboard is visible, show its login
-  if (!document.getElementById('dashboardPage').classList.contains('hidden')) {
-    showLoginSection();
+  try {
+    await fetch('/api/logout', { method: 'POST' });
+    localStorage.removeItem('isLoggedIn');
+    currentUser = { username: '', role: '', fullName: '' };
+
+    // Hide app, show global login
+    document.getElementById('appContent').classList.add('hidden');
+    document.getElementById('globalLoginSection').classList.remove('hidden');
+
+    // Reset specific views
+    const dashPage = document.getElementById('dashboardPage');
+    const confPage = document.getElementById('configPage');
+    if (dashPage) dashPage.classList.add('hidden');
+    if (confPage) confPage.classList.add('hidden');
+
+    showToast('Sessão encerrada', 'success');
+  } catch (err) {
+    showToast('Erro ao sair', 'error');
   }
-  // If config is visible, show its login
-  if (!document.getElementById('configPage').classList.contains('hidden')) {
-    showConfigLogin();
-  }
-  showToast('Sessão encerrada', 'info');
 }
 
 let chartInstances = {};

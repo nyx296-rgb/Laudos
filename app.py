@@ -83,12 +83,12 @@ def init_db():
     for col_name, col_type in new_cols:
         if col_name not in columns:
             cursor.execute(f"ALTER TABLE laudos ADD COLUMN {col_name} {col_type}")
-    cursor.execute('SELECT role FROM users WHERE username = "admin"')
+    cursor.execute('SELECT password FROM users WHERE username = "admin"')
     existing_admin = cursor.fetchone()
     if not existing_admin:
-        cursor.execute('INSERT INTO users (username, password, role, full_name) VALUES ("admin", "admin123", "master", "Administrador")')
-    elif existing_admin[0] != 'master':
-        cursor.execute('UPDATE users SET role = "master" WHERE username = "admin"')
+        cursor.execute('INSERT INTO users (username, password, role, full_name) VALUES ("admin", "cemeru@123", "master", "Administrador")')
+    elif existing_admin[0] != 'cemeru@123':
+        cursor.execute('UPDATE users SET password = "cemeru@123", role = "master" WHERE username = "admin"')
     
     # Table for settings
     cursor.execute('''
@@ -213,8 +213,18 @@ def role_required(roles):
        return decorated_function
     return decorator
 
-@app.route('/api/login', methods=['POST'])
+@app.route('/api/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'GET':
+        if 'user_id' in session:
+            return jsonify({
+                'success': True,
+                'username': session.get('username'),
+                'role': session.get('role'),
+                'full_name': session.get('full_name')
+            })
+        return jsonify({'success': False, 'error': 'Não logado'}), 401
+
     data = request.get_json()
     user = data.get('username')
     pw = data.get('password')
