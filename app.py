@@ -398,6 +398,18 @@ def logout():
     session.clear()
     return jsonify({'success': True})
 
+@app.route('/api/me')
+def get_me():
+    """Returns the current session user's info, or 401 if not logged in."""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
+    return jsonify({
+        'success': True,
+        'username': session.get('username'),
+        'role': session.get('role'),
+        'full_name': session.get('full_name')
+    })
+
 @app.route('/api/tasy')
 def get_tasy():
     return jsonify({'success': True, 'data': TASY_DATA_CACHE})

@@ -167,7 +167,7 @@ function renumberRows() {
     equipCount++;
     row.dataset.index = equipCount;
     const label = row.querySelector('.equip-row-num');
-    if (label) label.textContent = `Equipamento ${equipCount}`;
+    if (label) label.textContent = `ITEM ${equipCount}`;
   });
 }
 
@@ -494,35 +494,44 @@ function hideDropdown() {
 
 
 // ============================================================
-// SOLICITAÇÃO DE COMPRA MODE
+// SOLICITAÇÃO DE COMPRA MODE (Persisted)
 // ============================================================
-let isPurchaseMode = false;
+let isPurchaseMode = localStorage.getItem('laudo_app_mode') === 'purchase';
 
-function toggleAppMode() {
-  isPurchaseMode = !isPurchaseMode;
-  const body = document.body;
+/**
+ * Switches the operational mode (Laudo vs Purchase)
+ * and refreshes UI components like equipment lists.
+ */
+function setAppMode(mode) {
+  isPurchaseMode = (mode === 'purchase');
+  localStorage.setItem('laudo_app_mode', mode);
+  applyUIMode();
+  populateFormOptions();
+  showToast(`Modo alterado para: ${isPurchaseMode ? 'Compra' : 'Laudo'}`, 'success');
+}
+
+/**
+ * Applies visual theme and field visibility based on isPurchaseMode.
+ */
+function applyUIMode() {
   const title = document.querySelector('.app-title');
   const subtitle = document.querySelector('.app-subtitle');
-  const btnMode = document.getElementById('btnToggleMode');
   const problemField = document.getElementById('problem_field');
+  const body = document.body;
 
   if (isPurchaseMode) {
     body.classList.add('purchase-mode');
-    title.textContent = 'Solicitação de Compra';
-    subtitle.textContent = 'Preencha os itens para solicitação de nova aquisição';
-    btnMode.textContent = 'Modo Gerador de Laudos';
-    btnMode.classList.add('mode-active');
+    if (title) title.textContent = 'Solicitação de Compra';
+    if (subtitle) subtitle.textContent = 'Preencha os itens para solicitação de nova aquisição';
     if (problemField) problemField.classList.add('hidden');
   } else {
     body.classList.remove('purchase-mode');
-    title.textContent = 'Gerador de Laudos Técnicos';
-    subtitle.textContent = 'Preencha os campos e gere o PDF com QR Code de autenticidade';
-    btnMode.textContent = 'Modo Solicitação de Compra';
-    btnMode.classList.remove('mode-active');
+    if (title) title.textContent = 'Gerador de Laudos Técnicos';
+    if (subtitle) subtitle.textContent = 'Preencha os campos e gere o PDF com QR Code de autenticidade';
     if (problemField) problemField.classList.remove('hidden');
   }
 
-  // Hide global equipment fields in purchase mode
+  // Toggle field visibility (Marca, Modelo, Serial, etc)
   ['marca', 'modelo', 'serie', 'situacao', 'item_defeito'].forEach(id => {
     const field = document.getElementById(id)?.parentElement;
     if (field) {
@@ -530,24 +539,175 @@ function toggleAppMode() {
       else field.classList.remove('hidden');
     }
   });
+}
 
-  showToast(`Modo alterado para: ${isPurchaseMode ? 'Compra' : 'Laudo'}`, 'success');
+/**
+ * Manage Active State in Header Navigation
+ */
+function updateNavActive(activeId) {
+  document.querySelectorAll('.header-nav .btn-nav').forEach(btn => {
+    btn.classList.toggle('active', btn.id === activeId);
+  });
+}
+
+/**
+ * Main View/Mode Navigation
+ */
+function gotoGenerator() {
+  hideAllPages();
+  document.getElementById('mainGenerator').classList.remove('hidden');
+  setAppMode('laudo');
+  updateNavActive('btnNavGen');
+}
+
+function gotoPurchaseMode() {
+  hideAllPages();
+  document.getElementById('mainGenerator').classList.remove('hidden');
+  setAppMode('purchase');
+  updateNavActive('btnNavPurchase');
+}
+
+async function toggleDashboard() {
+  const dash = document.getElementById('dashboardPage');
+  if (!dash.classList.contains('hidden')) {
+    gotoGenerator();
+    return;
+  }
+
+  hideAllPages();
+  dash.classList.remove('hidden');
+  updateNavActive('btnNavDashboard');
+
+  const ok = await checkServerAuth();
+  if (ok) {
+    showStatsSection();
+    fetchStats();
+  } else {
+    showLoginSection();
+  }
+}
+
+async function toggleConfig() {
+  const config = document.getElementById('configPage');
+  if (!config.classList.contains('hidden')) {
+    gotoGenerator();
+    return;
+  }
+
+  hideAllPages();
+  config.classList.remove('hidden');
+  updateNavActive('btnNavConfig');
+
+  const ok = await checkServerAuth();
+  if (ok) {
+    showConfigMain();
+    if (typeof selectListCategory === 'function') {
+      selectListCategory('unidades');
+    }
+    applyRbacUI();
+  } else {
+    showConfigLogin();
+  }
+}
+
+function hideAllPages() {
+  document.getElementById('mainGenerator').classList.add('hidden');
+  document.getElementById('dashboardPage').classList.add('hidden');
+  document.getElementById('configPage').classList.add('hidden');
+}
+
+/**
+ * Apply Role-Based Access Control to the UI.
+ */
+function applyRbacUI() {
+  if (!currentUser) return;
+  const role = currentUser.role;
+  const isMaster = role === 'master';
+  const isViewer = role === 'viewer';
+
+  // Generate button
+  const btnGerar = document.getElementById('btnGerar');
+  if (btnGerar) btnGerar.classList.toggle('hidden', isViewer);
+
+  // Purchase Nav
+  const btnPurchase = document.getElementById('btnNavPurchase');
+  if (btnPurchase) btnPurchase.classList.toggle('hidden', isViewer);
+
+  // Config Nav
+  const btnConfig = document.getElementById('btnNavConfig');
+  if (btnConfig) btnConfig.classList.toggle('hidden', isViewer);
+
+  // User/Config Management Tabs
+  const btnCatUsers = document.getElementById('btnCatUsers');
+  if (btnCatUsers) btnCatUsers.classList.toggle('hidden', !isMaster);
+
+  const btnCatBackup = document.getElementById('btnCatBackup');
+  if (btnCatBackup) btnCatBackup.classList.toggle('hidden', !isMaster);
+
+  // Management actions
+  document.querySelectorAll('.btn-action.btn-delete, .btn-action[onclick*="toggleTest"]').forEach(btn => {
+    btn.classList.toggle('hidden', isViewer);
+  });
 }
 
 async function initApp() {
   console.log('Iniciando aplicativo...');
-
-  // Check auth first
+  applyUIMode();
   const authed = await checkServerAuth();
   if (!authed) {
-    document.getElementById('globalLoginSection').classList.remove('hidden');
-    document.getElementById('appContent').classList.add('hidden');
+    const loginSec = document.getElementById('globalLoginSection');
+    const appCont = document.getElementById('appContent');
+    if (loginSec) loginSec.classList.remove('hidden');
+    if (appCont) appCont.classList.add('hidden');
+    return;
+  }
+  onLoginSuccess();
+}
+
+/**
+ * Handle Global Login from the new premium overlay
+ */
+async function handleGlobalLogin() {
+  const userEl = document.getElementById('globalUsername');
+  const passEl = document.getElementById('globalPassword');
+  const errorEl = document.getElementById('loginErrorMsg');
+
+  const username = userEl.value;
+  const password = passEl.value;
+
+  if (!username || !password) {
+    if (errorEl) {
+      errorEl.textContent = 'Preencha todos os campos';
+      errorEl.classList.remove('hidden');
+    }
     return;
   }
 
-  // If authed, show app and load data
-  document.getElementById('globalLoginSection').classList.add('hidden');
-  document.getElementById('appContent').classList.remove('hidden');
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentUser.username = data.username || '';
+      currentUser.role = data.role || '';
+      currentUser.fullName = data.full_name || '';
+      onLoginSuccess();
+    } else {
+      if (errorEl) {
+        errorEl.textContent = data.error || 'Credenciais inválidas';
+        errorEl.classList.remove('hidden');
+      }
+    }
+  } catch (err) {
+    showToast('Erro de conexão', 'error');
+  }
+}
+
+async function onAfterLogin() {
+  await checkServerAuth(); // Refresh currentUser state
 
   // Set default date to today
   const dataInput = document.getElementById('data');
@@ -565,6 +725,47 @@ async function initApp() {
 }
 
 /**
+ * Checks whether the user has an active session on the server.
+ */
+async function checkServerAuth() {
+  try {
+    const res = await fetch('/api/stats');
+    if (res.status === 401) {
+      currentUser = { username: '', role: '', fullName: '' };
+      return false;
+    }
+    const meRes = await fetch('/api/me');
+    if (meRes.ok) {
+      const me = await meRes.json();
+      if (me.success) {
+        currentUser.username = me.username || '';
+        currentUser.role = me.role || '';
+        currentUser.fullName = me.full_name || '';
+      }
+    }
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+/**
+ * Called after a successful login
+ */
+function onLoginSuccess() {
+  document.getElementById('globalLoginSection').classList.add('hidden');
+  document.getElementById('appContent').classList.remove('hidden');
+
+  const nameDisp = document.getElementById('userNameDisplay');
+  const roleDisp = document.getElementById('userRoleDisplay');
+  if (nameDisp) nameDisp.textContent = currentUser.fullName || currentUser.username || 'Usuário';
+  if (roleDisp) roleDisp.textContent = currentUser.role || '';
+
+  applyRbacUI();
+  onAfterLogin();
+}
+
+/**
  * Fetches the next available laudo number from the server.
  */
 async function fetchNextLaudoNum() {
@@ -578,15 +779,12 @@ async function fetchNextLaudoNum() {
       laudoInput.value = data.next_id;
     }
   } catch (err) {
-    console.error('Erro ao buscar próximo número de laudo:', err);
-    // Fallback to local auto-generation if API fails
     autoGenerateLaudoNumber();
   }
 }
 
 /**
  * Generates a laudo number automatically based on the current year.
- * Format: XXX/YYYY
  */
 function autoGenerateLaudoNumber() {
   const laudoInput = document.getElementById('id_laudo');
@@ -598,23 +796,17 @@ function autoGenerateLaudoNumber() {
   }
 }
 
-// ============================================================
-// GENERATE LAUDO
-// ============================================================
 async function gerarLaudo() {
   let idLaudoInput = document.getElementById('id_laudo');
   let idLaudo = idLaudoInput.value.trim();
 
-  // Robust auto-generation if empty
   if (!idLaudo || idLaudo === 'Gerando...') {
-    console.log('Número do laudo vazio. Tentando buscar...');
     await fetchNextLaudoNum();
     idLaudo = idLaudoInput.value.trim();
   }
 
-  // Final check
   if (!idLaudo || idLaudo === 'Gerando...') {
-    showToast('Não foi possível obter o número do laudo. Verifique sua conexão.', 'error');
+    showToast('Não foi possível obter o número do laudo.', 'error');
     return;
   }
 
@@ -627,7 +819,6 @@ async function gerarLaudo() {
     return;
   }
 
-  // Convert date to pt-BR format
   let dataFormatada = data;
   if (data) {
     const [y, m, d] = data.split('-');
@@ -667,7 +858,6 @@ async function gerarLaudo() {
       throw new Error(err.error || `HTTP ${res.status}`);
     }
 
-    // Download the file
     const blob = await res.blob();
     const contentDisposition = res.headers.get('Content-Disposition') || '';
     const match = contentDisposition.match(/filename="?([^"]+)"?/);
@@ -682,23 +872,18 @@ async function gerarLaudo() {
     a.remove();
     URL.revokeObjectURL(url);
 
-    // Refresh next laudo number
     fetchNextLaudoNum();
-
-    showToast(`✅ Laudo "${filename}" gerado com sucesso!`, 'success');
+    showToast(`✅ Sucesso! "${filename}" gerado.`, 'success');
   } catch (err) {
     showToast('Erro: ' + err.message, 'error');
-    console.error(err);
   } finally {
     showLoading(false);
   }
 }
 
-// ============================================================
-// UI HELPERS
-// ============================================================
 function showToast(msg, type = '') {
   const toast = document.getElementById('toast');
+  if (!toast) return;
   toast.textContent = msg;
   toast.className = 'toast ' + type;
   toast.classList.remove('hidden');
@@ -707,36 +892,7 @@ function showToast(msg, type = '') {
 
 function showLoading(show) {
   const overlay = document.getElementById('loading');
-  overlay.classList.toggle('hidden', !show);
-}
-
-// ============================================================
-// DASHBOARD & AUTH LOGIC
-// ============================================================
-let visibleColumns = new Set(['data', 'tipo', 'unidade', 'item_defeito']);
-let selectedListCategory = 'unidades';
-
-function toggleDashboard() {
-  const dashPage = document.getElementById('dashboardPage');
-  const configPage = document.getElementById('configPage');
-  const generator = document.getElementById('mainGenerator');
-  const header = document.querySelector('.app-header');
-
-  const isHiding = !dashPage.classList.contains('hidden');
-
-  if (isHiding) {
-    dashPage.classList.add('hidden');
-    generator.classList.remove('hidden');
-    populateFormOptions();
-  } else {
-    if (configPage) configPage.classList.add('hidden');
-    dashPage.classList.remove('hidden');
-    generator.classList.add('hidden');
-    checkServerAuth().then(ok => {
-      if (ok) showStatsSection();
-      else showLoginSection();
-    });
-  }
+  if (overlay) overlay.classList.toggle('hidden', !show);
 }
 
 function switchDashTab(tab) {
@@ -750,70 +906,6 @@ function switchDashTab(tab) {
 
   if (tab === 'stats') fetchStats();
   if (tab === 'reports') fetchIncidenceReport();
-}
-
-function toggleConfig() {
-  const configPage = document.getElementById('configPage');
-  const dashPage = document.getElementById('dashboardPage');
-  const generator = document.getElementById('mainGenerator');
-
-  const isShowing = !configPage.classList.contains('hidden');
-
-  if (isShowing) {
-    configPage.classList.add('hidden');
-    generator.classList.remove('hidden');
-    populateFormOptions();
-  } else {
-    if (dashPage) dashPage.classList.add('hidden');
-    configPage.classList.remove('hidden');
-    generator.classList.add('hidden');
-    checkServerAuth().then(ok => {
-      if (ok) {
-        showConfigMain();
-        applyRbacUI();
-      } else {
-        showConfigLogin();
-      }
-    });
-  }
-}
-
-/**
- * RBAC: Hide/Show elements based on role
- */
-function applyRbacUI() {
-  const role = currentUser.role;
-  const isMaster = role === 'master';
-  const isSuporte = role === 'suporte';
-  const isViewer = role === 'viewer';
-
-  // Generator permissions
-  const btnGerar = document.getElementById('btnGerar');
-  if (btnGerar) {
-    if (isViewer) btnGerar.classList.add('hidden');
-    else btnGerar.classList.remove('hidden');
-  }
-
-  // Dashboard permissions
-  // In Dashboard, hide delete buttons and test toggles if not master
-  // This will be handled in fetchRecentLaudos / fetchManagementData
-
-  // Config Sidebar permissions
-  const btnCatUsers = document.getElementById('btnCatUsers');
-  const btnCatBackup = document.getElementById('btnCatBackup');
-
-  if (btnCatUsers) {
-    if (isMaster) btnCatUsers.classList.remove('hidden');
-    else btnCatUsers.classList.add('hidden');
-  }
-
-  if (btnCatBackup) {
-    if (isMaster) btnCatBackup.classList.remove('hidden');
-    else btnCatBackup.classList.add('hidden');
-  }
-
-  // Management controls (Add option, delete, etc.)
-  // These are often dynamic, so we'll check role in render functions too
 }
 
 
@@ -1060,14 +1152,22 @@ async function populateFormOptions() {
 }
 
 function showLoginSection() {
-  document.getElementById('loginSection').classList.remove('hidden');
-  document.getElementById('statsSection').classList.add('hidden');
+  const globalLogin = document.getElementById('globalLoginSection');
+  if (globalLogin) globalLogin.classList.remove('hidden');
+
+  const stats = document.getElementById('statsSection');
+  if (stats) stats.classList.add('hidden');
 }
 
 function showStatsSection() {
-  document.getElementById('loginSection').classList.add('hidden');
-  document.getElementById('statsSection').classList.remove('hidden');
+  const stats = document.getElementById('statsSection');
+  if (stats) stats.classList.remove('hidden');
   switchDashTab('stats');
+}
+
+/** Hides all config panels within the configuration view */
+function hideAllConfigViews() {
+  _showConfigPanel('');
 }
 
 function showConfigLogin() {
@@ -1106,99 +1206,207 @@ function showProfileView() {
   document.getElementById('profileConfirmPassword').value = '';
 }
 
-
-async function checkServerAuth() {
+/**
+ * User Management Logic
+ */
+async function fetchUsers() {
   try {
-    const res = await fetch('/api/login');
-    if (res.status === 200) {
-      const data = await res.json();
-      if (data.success) {
-        currentUser = {
-          username: data.username,
-          role: data.role,
-          fullName: data.full_name
-        };
-        updateUserUI(data);
-        return true;
-      }
+    const res = await fetch('/api/admin/users');
+    const data = await res.json();
+    if (data.success) {
+      renderUsersTable(data.data);
     }
-    return false;
   } catch (err) {
-    return false;
+    showToast('Erro ao carregar usuários', 'error');
   }
-}
-
-function updateUserUI(data) {
-  const nameDisp = document.getElementById('userNameDisplay');
-  const roleDisp = document.getElementById('userRoleDisplay');
-  if (nameDisp) nameDisp.textContent = data.full_name || data.username;
-  if (roleDisp) {
-    roleDisp.textContent = data.role.toUpperCase();
-    roleDisp.className = `badge-role ${data.role}`;
-  }
-}
-
-async function restoreSession() {
-  await checkServerAuth();
 }
 
 /**
- * Shared Login Success Logic
+ * Renders the users table with premium styling and status chips
  */
-function onLoginSuccess(data) {
-  currentUser = {
-    username: data.username,
-    role: data.role,
-    fullName: data.full_name
-  };
-  localStorage.setItem('isLoggedIn', 'true');
+function renderUsersTable(users) {
+  const tbody = document.getElementById('users_table_body');
+  if (!tbody) return;
 
-  // Update Header
-  const nameDisp = document.getElementById('userNameDisplay');
-  const roleDisp = document.getElementById('userRoleDisplay');
-  if (nameDisp) nameDisp.textContent = data.full_name || data.username;
-  if (roleDisp) {
-    roleDisp.textContent = data.role.toUpperCase();
-    roleDisp.className = `badge-role ${data.role}`;
+  if (users.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 40px;">Nenhum usuário encontrado</td></tr>';
+    return;
   }
 
-  // Hide login, show app
-  document.getElementById('globalLoginSection').classList.add('hidden');
-  document.getElementById('appContent').classList.remove('hidden');
+  tbody.innerHTML = users.map(u => {
+    const isAdmin = u.role === 'master';
+    const statusClass = u.is_active ? 'active' : 'inactive';
+    const statusText = u.is_active ? 'Ativo' : 'Inativo';
+    const statusDot = u.is_active ? '●' : '○';
 
-  // Trigger data load
-  // IMPORTANT: Do NOT call initApp again as it creates an infinite loop if initApp calls checkServerAuth
-  onAfterLogin();
+    const roleLabels = {
+      'master': 'Administrador',
+      'suporte': 'Suporte Técnico',
+      'viewer': 'Visualizador'
+    };
 
-  applyRbacUI();
+    return `
+      <tr>
+        <td>
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-weight: 600; color: var(--text-primary);">@${u.username}</span>
+            <span style="font-size: 11px; color: var(--text-secondary);">ID: ${u.id || 'N/A'}</span>
+          </div>
+        </td>
+        <td>${u.full_name || '—'}</td>
+        <td>
+          <span class="badge-role" style="font-size: 11px;">${roleLabels[u.role] || u.role}</span>
+        </td>
+        <td>
+          <span class="status-chip ${statusClass}">
+            <span>${statusDot}</span>
+            ${statusText}
+          </span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button class="btn-edit-small" onclick="showEditUserModal(${JSON.stringify(u).replace(/"/g, '&quot;')})" title="Editar Usuário">
+              <span>✏️</span>
+            </button>
+            ${!isAdmin ? `
+              <button class="btn-del-small" onclick="deleteUser(${u.id})" title="Excluir Usuário">
+                <span>🗑️</span>
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
-async function onAfterLogin() {
-  // Load backend data ONLY after auth confirmed
-  await loadTasyData();
-  await populateFormOptions();
+function showAddUserModal() {
+  document.getElementById('userModalTitle').textContent = 'Novo Usuário';
+  document.getElementById('modalUserId').value = '';
+  document.getElementById('modalUsername').value = '';
+  document.getElementById('modalUsername').disabled = false;
+  document.getElementById('modalPassword').value = '';
+  document.getElementById('modalPasswordGroup').classList.remove('hidden');
+  document.getElementById('modalFullName').value = '';
+  document.getElementById('modalRole').value = 'suporte';
+  document.getElementById('modalIsActive').checked = true;
+  document.getElementById('modalActiveGroup').classList.add('hidden'); // No active toggle for new users
 
-  if (equipCount === 0) addEquipamento();
-  fetchNextLaudoNum();
+  document.getElementById('userModal').classList.remove('hidden');
 }
 
-async function handleGlobalLogin() {
-  const user = document.getElementById('globalUsername').value;
-  const pass = document.getElementById('globalPassword').value;
-  await performLogin(user, pass);
+function showEditUserModal(user) {
+  document.getElementById('userModalTitle').textContent = 'Editar Usuário';
+  document.getElementById('modalUserId').value = user.id;
+  document.getElementById('modalUsername').value = user.username;
+  document.getElementById('modalUsername').disabled = true;
+  document.getElementById('modalPassword').value = '';
+  document.getElementById('modalPasswordGroup').classList.add('hidden'); // Hide password in quick edit
+  document.getElementById('modalFullName').value = user.full_name || '';
+  document.getElementById('modalRole').value = user.role;
+  document.getElementById('modalIsActive').checked = user.is_active;
+  document.getElementById('modalActiveGroup').classList.remove('hidden');
+
+  document.getElementById('userModal').classList.remove('hidden');
 }
 
-async function handleLogin() {
-  const user = document.getElementById('username').value;
-  const pass = document.getElementById('password').value;
-  await performLogin(user, pass);
+function hideUserModal() {
+  document.getElementById('userModal').classList.add('hidden');
 }
 
-async function handleConfigLogin() {
-  const user = document.getElementById('configUsername').value;
-  const pass = document.getElementById('configPassword').value;
-  await performLogin(user, pass);
+async function saveUserModal() {
+  const id = document.getElementById('modalUserId').value;
+  const username = document.getElementById('modalUsername').value;
+  const password = document.getElementById('modalPassword').value;
+  const fullName = document.getElementById('modalFullName').value;
+  const role = document.getElementById('modalRole').value;
+  const isActive = document.getElementById('modalIsActive').checked;
+
+  const isEdit = !!id;
+  const url = isEdit ? `/api/admin/users/${id}` : '/api/admin/users';
+  const method = isEdit ? 'PUT' : 'POST';
+
+  const bodyData = {
+    full_name: fullName,
+    role: role,
+    is_active: isActive
+  };
+  if (!isEdit) {
+    bodyData.username = username;
+    bodyData.password = password;
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyData)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(isEdit ? 'Usuário atualizado!' : 'Usuário criado!', 'success');
+      hideUserModal();
+      fetchUsers();
+    } else {
+      showToast(data.error || 'Erro ao salvar usuário', 'error');
+    }
+  } catch (err) {
+    showToast('Erro de conexão', 'error');
+  }
 }
+
+async function deleteUser(id) {
+  if (!confirm('Excluir este usuário permanentemente?')) return;
+  try {
+    const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Usuário excluído', 'success');
+      fetchUsers();
+    } else {
+      showToast(data.error || 'Erro ao excluir', 'error');
+    }
+  } catch (err) {
+    showToast('Erro de conexão', 'error');
+  }
+}
+
+/**
+ * Profile Update Logic
+ */
+async function handleProfileUpdate() {
+  const fullName = document.getElementById('profileFullName').value;
+  const pass = document.getElementById('profilePassword').value;
+  const confirmPass = document.getElementById('profileConfirmPassword').value;
+
+  if (pass && pass !== confirmPass) {
+    showToast('As senhas não coincidem', 'error');
+    return;
+  }
+
+  const bodyData = { full_name: fullName };
+  if (pass) bodyData.password = pass;
+
+  try {
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyData)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Perfil atualizado!', 'success');
+      currentUser.fullName = fullName;
+      const nameDisp = document.getElementById('userNameDisplay');
+      if (nameDisp) nameDisp.textContent = fullName || currentUser.username;
+    } else {
+      showToast(data.error || 'Erro ao atualizar perfil', 'error');
+    }
+  } catch (err) {
+    showToast('Erro de conexão', 'error');
+  }
+}
+
 
 async function performLogin(username, password) {
   try {

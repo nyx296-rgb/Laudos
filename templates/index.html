@@ -13,21 +13,43 @@
 
 <body>
 
-  <!-- GLOBAL LOGIN (Mandatory at Startup) -->
-  <div id="globalLoginSection" class="login-section">
-    <div class="login-card">
-      <div class="login-icon">🔐</div>
-      <h1 style="margin-bottom: 5px; color: var(--text-primary);">Acesso ao Sistema</h1>
-      <p style="margin-bottom: 20px; color: var(--text-secondary);">Faça login para começar a gerar laudos.</p>
-      <div class="field">
-        <label>Usuário</label>
-        <input type="text" id="globalUsername" placeholder="Usuário" />
+  <!-- Global Login Overlay -->
+  <div id="globalLoginSection" class="login-overlay hidden">
+    <div class="login-glass-container">
+      <div class="login-left-panel">
+        <div class="login-logo-circle">📋</div>
+        <h2>Sistema de Laudos</h2>
+        <p>Gerenciamento Técnico e Solicitações</p>
       </div>
-      <div class="field">
-        <label>Senha</label>
-        <input type="password" id="globalPassword" placeholder="Senha" />
+      <div class="login-right-panel">
+        <div class="login-form-box">
+          <h3>Bem-vindo</h3>
+          <p class="login-hint">Identifique-se para continuar</p>
+
+          <div class="field login-field">
+            <label>Usuário</label>
+            <div class="input-with-icon">
+              <span class="icon">👤</span>
+              <input type="text" id="globalUsername" placeholder="Digite seu usuário" autocomplete="username" />
+            </div>
+          </div>
+
+          <div class="field login-field">
+            <label>Senha</label>
+            <div class="input-with-icon">
+              <span class="icon">🔒</span>
+              <input type="password" id="globalPassword" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+          </div>
+
+          <button class="btn-login-submit" onclick="handleGlobalLogin()">
+            Acessar Sistema
+            <span class="btn-arrow">→</span>
+          </button>
+
+          <div id="loginErrorMsg" class="login-error hidden">Usuário ou senha inválidos</div>
+        </div>
       </div>
-      <button class="btn-primary" onclick="handleGlobalLogin()">Entrar no Sistema</button>
     </div>
   </div>
 
@@ -44,22 +66,19 @@
               <p class="app-subtitle">Preencha os campos e gere o PDF com QR Code de autenticidade</p>
             </div>
           </div>
-          <div class="header-actions">
+          <div class="header-nav">
+            <button class="btn-nav active" id="btnNavGen" onclick="gotoGenerator()">Gerador</button>
+            <button class="btn-nav" id="btnNavPurchase" onclick="gotoPurchaseMode()">Modo Compra</button>
+            <button class="btn-nav" id="btnNavDashboard" onclick="toggleDashboard()">Dashboard</button>
+            <button class="btn-nav" id="btnNavConfig" onclick="toggleConfig()">Configurações</button>
+          </div>
+
+          <div class="header-user-area">
             <div id="userBadge" class="user-badge-header">
               <span id="userNameDisplay">Usuário</span>
               <span id="userRoleDisplay" class="badge-role">cargo</span>
             </div>
-            <label class="check-test">
-              <input type="checkbox" id="is_test"> Marcar como Teste
-            </label>
-            <button class="btn-mode" id="btnToggleMode" onclick="toggleAppMode()">Modo Solicitação de Compra</button>
-            <button class="btn-mode" id="btnDashboard" onclick="toggleDashboard()">Dashboard</button>
-            <button class="btn-mode" id="btnConfig" onclick="toggleConfig()">Configurações</button>
-            <button class="btn-gerar" id="btnGerar" onclick="gerarLaudo()">
-              <span class="btn-icon">⬇</span>
-              <span class="btn-text">Gerar PDF</span>
-            </button>
-            <button class="btn-secondary" onclick="handleLogout()" style="margin: 0; padding: 8px 12px;">Sair</button>
+            <button class="btn-logout" onclick="handleLogout()" title="Sair">Sair</button>
           </div>
         </div>
       </header>
@@ -81,21 +100,7 @@
             <button class="btn-secondary" onclick="handleLogout()" style="margin: 0">Sair</button>
           </header>
 
-          <!-- LOGIN SECTION -->
-          <div id="loginSection" class="login-section">
-            <div class="login-card">
-              <div class="login-icon">🔐</div>
-              <h3>Acesso Restrito</h3>
-              <p>Faça login para acessar o painel administrativo.</p>
-              <div class="field">
-                <input type="text" id="username" placeholder="Usuário" />
-              </div>
-              <div class="field">
-                <input type="password" id="password" placeholder="Senha" />
-              </div>
-              <button class="btn-primary" onclick="handleLogin()">Entrar no Sistema</button>
-            </div>
-          </div>
+
 
           <!-- DASHBOARD CONTENT -->
           <div id="statsSection" class="stats-viewport hidden">
@@ -359,255 +364,297 @@
                           de escrita nesta pasta.
                         </p>
                       </div>
-                      <!-- User Management View -->
-                      <div id="usersManagementView" class="hidden">
-                        <div class="lists-header">
-                          <h3>👥 Gerenciar Usuários</h3>
-                          <button class="btn-primary" onclick="showAddUserModal()"
-                            style="width: auto; padding: 8px 16px;">+ Novo Usuário</button>
-                        </div>
-                        <div class="management-table-card">
-                          <div class="table-scroll">
-                            <table>
-                              <thead>
-                                <tr>
-                                  <th>Usuário</th>
-                                  <th>Nome Completo</th>
-                                  <th>Cargo/Perfil</th>
-                                  <th>Status</th>
-                                  <th>Ações</th>
-                                </tr>
-                              </thead>
-                              <tbody id="users_table_body"></tbody>
-                            </table>
-                          </div>
+                    </div> <!-- /settings-backup-box -->
+                  </div> <!-- /backupSettingsView -->
+
+                  <!-- User Management View -->
+                  <div id="usersManagementView" class="hidden">
+                    <div class="view-header-premium">
+                      <div class="view-header-left">
+                        <h3>👥 Gestão de Usuários</h3>
+                        <p class="view-subtitle">Controle de acessos e permissões do sistema</p>
+                      </div>
+                      <button class="btn-primary btn-add-user" onclick="showAddUserModal()">
+                        <span class="plus-icon">+</span> Novo Usuário
+                      </button>
+                    </div>
+
+                    <div class="management-card-premium">
+                      <div class="table-scroll">
+                        <table class="premium-table">
+                          <thead>
+                            <tr>
+                              <th>Usuário / Identificação</th>
+                              <th>Nome Completo</th>
+                              <th>Perfil de Acesso</th>
+                              <th>Status</th>
+                              <th style="text-align: right;">Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody id="users_table_body"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Profile Update View -->
+                  <div id="profileUpdateView" class="hidden">
+                    <div class="profile-card-premium">
+                      <div class="profile-card-header">
+                        <div class="profile-avatar-circle">👤</div>
+                        <div class="profile-header-text">
+                          <h3>Meu Perfil</h3>
+                          <p>Gerencie suas informações e credenciais</p>
                         </div>
                       </div>
 
-                      <!-- Profile Update View -->
-                      <div id="profileUpdateView" class="hidden">
-                        <div class="lists-header">
-                          <h3>👤 Meu Perfil</h3>
-                        </div>
-                        <div class="settings-backup-box" style="max-width: 500px; margin: 10px 0;">
-                          <div class="field">
-                            <label>Nome de Exibição</label>
+                      <div class="profile-card-body">
+                        <div class="field">
+                          <label>Nome de Exibição</label>
+                          <div class="input-with-icon">
+                            <span class="icon">👤</span>
                             <input type="text" id="profileFullName" placeholder="Seu nome completo">
                           </div>
-                          <div class="field">
-                            <label>Nova Senha (deixe em branco para não alterar)</label>
-                            <input type="password" id="profilePassword" placeholder="******">
-                          </div>
-                          <div class="field">
-                            <label>Confirmar Nova Senha</label>
-                            <input type="password" id="profileConfirmPassword" placeholder="******">
-                          </div>
-                          <button class="btn-primary" onclick="handleProfileUpdate()" style="margin-top: 10px;">Salvar
-                            Alterações</button>
                         </div>
-                      </div>
 
-                      <!-- User Modal -->
-                      <div id="userModal" class="pdf-modal-overlay hidden">
-                        <div class="pdf-modal-content" style="max-width: 400px; height: auto;">
-                          <div class="pdf-modal-header">
-                            <span id="userModalTitle" class="pdf-modal-title">Novo Usuário</span>
-                            <button class="pdf-modal-close" onclick="hideUserModal()">✕</button>
+                        <div class="grid grid-2" style="gap: 16px;">
+                          <div class="field">
+                            <label>Nova Senha</label>
+                            <div class="input-with-icon">
+                              <span class="icon">🔒</span>
+                              <input type="password" id="profilePassword" placeholder="******">
+                            </div>
+                            <small class="field-hint">Deixe em branco para não alterar</small>
                           </div>
-                          <div style="padding: 20px;">
-                            <input type="hidden" id="modalUserId">
-                            <div class="field">
-                              <label>Nome de Usuário</label>
-                              <input type="text" id="modalUsername">
+
+                          <div class="field">
+                            <label>Confirmar Senha</label>
+                            <div class="input-with-icon">
+                              <span class="icon">🔒</span>
+                              <input type="password" id="profileConfirmPassword" placeholder="******">
                             </div>
-                            <div id="modalPasswordGroup" class="field">
-                              <label>Senha</label>
-                              <input type="password" id="modalPassword">
-                            </div>
-                            <div class="field">
-                              <label>Nome Completo</label>
-                              <input type="text" id="modalFullName">
-                            </div>
-                            <div class="field">
-                              <label>Perfil</label>
-                              <select id="modalRole">
-                                <option value="master">Master (Controle Total)</option>
-                                <option value="suporte">Suporte (Gera e consulta)</option>
-                                <option value="viewer">Viewer (Consulta somente)</option>
-                              </select>
-                            </div>
-                            <div class="field" id="modalActiveGroup">
-                              <label><input type="checkbox" id="modalIsActive" checked> Usuário Ativo</label>
-                            </div>
-                            <button class="btn-primary" onclick="saveUserModal()" style="margin-top: 15px;">Salvar
-                              Usuário</button>
                           </div>
                         </div>
+
+                        <div class="profile-actions">
+                          <button class="btn-primary" onclick="handleProfileUpdate()">
+                            Salvar Alterações
+                          </button>
+                        </div>
                       </div>
+                    </div>
+                  </div>
 
-                    </div><!-- /lists-main-content -->
-                  </div><!-- /lists-management-layout -->
-                </div>
-              </div><!-- /configMainSection -->
+                  <!-- User Modal -->
+                  <div id="userModal" class="pdf-modal-overlay hidden">
+                    <div class="pdf-modal-content" style="max-width: 400px; height: auto;">
+                      <div class="pdf-modal-header">
+                        <span id="userModalTitle" class="pdf-modal-title">Novo Usuário</span>
+                        <button class="pdf-modal-close" onclick="hideUserModal()">✕</button>
+                      </div>
+                      <div style="padding: 20px;">
+                        <input type="hidden" id="modalUserId">
+                        <div class="field">
+                          <label>Nome de Usuário</label>
+                          <input type="text" id="modalUsername">
+                        </div>
+                        <div id="modalPasswordGroup" class="field">
+                          <label>Senha</label>
+                          <input type="password" id="modalPassword">
+                        </div>
+                        <div class="field">
+                          <label>Nome Completo</label>
+                          <input type="text" id="modalFullName">
+                        </div>
+                        <div class="field">
+                          <label>Perfil</label>
+                          <select id="modalRole">
+                            <option value="master">Master (Controle Total)</option>
+                            <option value="suporte">Suporte (Gera e consulta)</option>
+                            <option value="viewer">Viewer (Consulta somente)</option>
+                          </select>
+                        </div>
+                        <div class="field" id="modalActiveGroup">
+                          <label><input type="checkbox" id="modalIsActive" checked> Usuário Ativo</label>
+                        </div>
+                        <button class="btn-primary" onclick="saveUserModal()" style="margin-top: 15px;">Salvar
+                          Usuário</button>
+                      </div>
+                    </div>
+                  </div>
 
+                </div><!-- /lists-main-content -->
+              </div><!-- /lists-management-layout -->
             </div>
-          </div>
+          </div><!-- /configMainSection -->
 
-          <!-- ============================================================
+        </div>
+      </div>
+
+      <!-- ============================================================
          MAIN GENERATOR FORM
          ============================================================ -->
-          <main class="main-content" id="mainGenerator">
-            <!-- Section 1: Header Info -->
-            <section class="card">
-              <h2 class="card-title"><span class="badge">1</span> Informações do Laudo</h2>
-              <div class="grid grid-4">
-                <div class="field">
-                  <label for="id_laudo">Número do Laudo</label>
-                  <input type="text" id="id_laudo" placeholder="Gerando..." readonly />
-                </div>
-                <div class="field">
-                  <label for="data">Data</label>
-                  <input type="date" id="data" />
-                </div>
-                <div class="field autocomplete-field">
-                  <label for="unidade">Unidade</label>
-                  <input type="text" id="unidade" placeholder="Selecione ou digite"
-                    onfocus="onCustomFocus(this, 'unidades')" oninput="onCustomInput(this, 'unidades')"
-                    autocomplete="off" />
-                </div>
-                <div class="field autocomplete-field">
-                  <label for="setor">Setor</label>
-                  <input type="text" id="setor" placeholder="Selecione ou digite"
-                    onfocus="onCustomFocus(this, 'setores')" oninput="onCustomInput(this, 'setores')"
-                    autocomplete="off" />
-                </div>
-                <div class="field autocomplete-field">
-                  <label for="local">Local</label>
-                  <input type="text" id="local" placeholder="Selecione ou digite"
-                    onfocus="onCustomFocus(this, 'locais')" oninput="onCustomInput(this, 'locais')"
-                    autocomplete="off" />
-                </div>
-                <!-- Global Equipment Fields -->
-                <div class="field autocomplete-field">
-                  <label for="marca">Marca</label>
-                  <input type="text" id="marca" placeholder="Selecione ou digite"
-                    onfocus="onCustomFocus(this, 'marcas')" oninput="onCustomInput(this, 'marcas')"
-                    autocomplete="off" />
-                </div>
-                <div class="field autocomplete-field">
-                  <label for="modelo">Modelo</label>
-                  <input type="text" id="modelo" placeholder="Selecione ou digite"
-                    onfocus="onCustomFocus(this, 'modelos')" oninput="onCustomInput(this, 'modelos')"
-                    autocomplete="off" />
-                </div>
-                <div class="field">
-                  <label for="serie">Nº de Série</label>
-                  <input type="text" id="serie" placeholder="Ex: XXXXXX" />
-                </div>
-                <div class="field" style="grid-column: span 2">
-                  <label for="situacao">Situação do Equipamento</label>
-                  <select id="situacao" class="situacao-select">
-                    <option value="Em uso">Em uso</option>
-                    <option value="Inativo">Inativo</option>
-                    <option value="Em manutenção">Em manutenção</option>
-                    <option value="Defeituoso">Defeituoso</option>
-                    <option value="Fidelização">Fidelização</option>
-                    <option value="Baixa patrimonial">Baixa patrimonial</option>
-                    <option value="Aguardando descarte">Aguardando descarte</option>
-                  </select>
-                </div>
-                <div class="field autocomplete-field" style="grid-column: span 2">
-                  <label for="item_defeito">Equipamento com Defeito</label>
-                  <input type="text" id="item_defeito" placeholder="Ex: Microcomputador Dell"
-                    onfocus="onCustomFocus(this, 'itens')" oninput="onCustomInput(this, 'itens')" autocomplete="off" />
-                </div>
-              </div>
-              <div class="field problem-desc-field" id="problem_field">
-                <label for="descricao_problema">Descrição do Problema</label>
-                <textarea id="descricao_problema"
-                  placeholder="Descreva detalhadamente o problema técnico identificado..."></textarea>
-              </div>
-            </section>
-
-            <!-- Section 2: Equipment List -->
-            <section class="card">
-              <div class="equip-header">
-                <h2 class="card-title"><span class="badge">2</span> Itens / Equipamentos</h2>
-                <button class="btn-add" onclick="addEquipamento()">+ Adicionar Item</button>
-              </div>
-              <div id="equipamentos-container" class="equip-list">
-                <div class="empty-equip">
-                  <span class="icon">🖥️</span>
-                  <strong>Nenhum item adicionado</strong>
-                  Clique no botão acima para começar a listar os itens.
-                </div>
-              </div>
-            </section>
-
-            <!-- Section 3: Analyst Info -->
-            <section class="card">
-              <h2 class="card-title"><span class="badge">3</span> Responsável Técnico</h2>
-              <div class="grid grid-2">
-                <div class="field autocomplete-field">
-                  <label for="nome_analista">Nome do Analista</label>
-                  <input type="text" id="nome_analista" placeholder="Selecione ou digite"
-                    onfocus="onCustomFocus(this, 'analistas')" oninput="onCustomInput(this, 'analistas')"
-                    autocomplete="off" />
-                </div>
-                <div class="field">
-                  <label for="cargo_analista">Cargo</label>
-                  <select id="cargo_analista">
-                    <!-- Populated dynamically -->
-                  </select>
-                </div>
-              </div>
-            </section>
-          </main>
-
-          <!-- Global Floating Dropdowns -->
-          <div id="tasyDropdown" class="dropdown-container hidden">
-            <div class="dropdown-search-wrap">
-              <input type="text" id="dropdownSearch" placeholder="Filtrar resultados..."
-                oninput="filterDropdown(this.value)" />
+      <main class="main-content" id="mainGenerator">
+        <!-- Section 1: Header Info -->
+        <section class="card">
+          <h2 class="card-title"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <span><span class="badge">1</span> Informações do Laudo</span>
+            <label class="check-test-label">
+              <input type="checkbox" id="is_test" class="checkbox-mini"> MODO TESTE
+            </label>
+          </h2>
+          <div class="grid grid-4">
+            <div class="field">
+              <label for="id_laudo">Número do Laudo</label>
+              <input type="text" id="id_laudo" placeholder="Gerando..." readonly />
             </div>
-            <div id="dropdownList" class="dropdown-list"></div>
-          </div>
-
-          <!-- Custom Options Dropdown -->
-          <div id="customDropdown" class="dropdown-container hidden">
-            <div id="customDropdownList" class="dropdown-list"></div>
-            <div class="dropdown-add-new">
-              <button class="btn-add-option" onclick="handleAddNewOption()">+ Adicionar como novo</button>
+            <div class="field">
+              <label for="data">Data</label>
+              <input type="date" id="data" />
+            </div>
+            <div class="field autocomplete-field">
+              <label for="unidade">Unidade</label>
+              <input type="text" id="unidade" placeholder="Selecione ou digite"
+                onfocus="onCustomFocus(this, 'unidades')" oninput="onCustomInput(this, 'unidades')"
+                autocomplete="off" />
+            </div>
+            <div class="field autocomplete-field">
+              <label for="setor">Setor</label>
+              <input type="text" id="setor" placeholder="Selecione ou digite" onfocus="onCustomFocus(this, 'setores')"
+                oninput="onCustomInput(this, 'setores')" autocomplete="off" />
+            </div>
+            <div class="field autocomplete-field">
+              <label for="local">Local</label>
+              <input type="text" id="local" placeholder="Selecione ou digite" onfocus="onCustomFocus(this, 'locais')"
+                oninput="onCustomInput(this, 'locais')" autocomplete="off" />
+            </div>
+            <!-- Global Equipment Fields -->
+            <div class="field autocomplete-field">
+              <label for="marca">Marca</label>
+              <input type="text" id="marca" placeholder="Selecione ou digite" onfocus="onCustomFocus(this, 'marcas')"
+                oninput="onCustomInput(this, 'marcas')" autocomplete="off" />
+            </div>
+            <div class="field autocomplete-field">
+              <label for="modelo">Modelo</label>
+              <input type="text" id="modelo" placeholder="Selecione ou digite" onfocus="onCustomFocus(this, 'modelos')"
+                oninput="onCustomInput(this, 'modelos')" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="serie">Nº de Série</label>
+              <input type="text" id="serie" placeholder="Ex: XXXXXX" />
+            </div>
+            <div class="field" style="grid-column: span 2">
+              <label for="situacao">Situação do Equipamento</label>
+              <select id="situacao" class="situacao-select">
+                <option value="Em uso">Em uso</option>
+                <option value="Inativo">Inativo</option>
+                <option value="Em manutenção">Em manutenção</option>
+                <option value="Defeituoso">Defeituoso</option>
+                <option value="Fidelização">Fidelização</option>
+                <option value="Baixa patrimonial">Baixa patrimonial</option>
+                <option value="Aguardando descarte">Aguardando descarte</option>
+              </select>
+            </div>
+            <div class="field autocomplete-field" style="grid-column: span 2">
+              <label for="item_defeito">Equipamento com Defeito</label>
+              <input type="text" id="item_defeito" placeholder="Ex: Microcomputador Dell"
+                onfocus="onCustomFocus(this, 'itens')" oninput="onCustomInput(this, 'itens')" autocomplete="off" />
             </div>
           </div>
+          <div class="field problem-desc-field" id="problem_field">
+            <label for="descricao_problema">Descrição do Problema</label>
+            <textarea id="descricao_problema"
+              placeholder="Descreva detalhadamente o problema técnico identificado..."></textarea>
+          </div>
+        </section>
 
-          <!-- PDF Viewer Modal -->
-          <div id="pdfViewerModal" class="pdf-modal-overlay hidden">
-            <div class="pdf-modal-content">
-              <div class="pdf-modal-header">
-                <span id="pdfModalTitle" class="pdf-modal-title">Visualizar PDF</span>
-                <button class="pdf-modal-close" onclick="closePdfModal()">✕ Fechar</button>
-              </div>
-              <iframe id="pdfModalFrame" class="pdf-modal-frame" src="" title="Visualizador de PDF"></iframe>
+        <!-- Section 2: Equipment List -->
+        <section class="card">
+          <div class="equip-header">
+            <h2 class="card-title"><span class="badge">2</span> Itens / Equipamentos</h2>
+            <button class="btn-add" onclick="addEquipamento()">+ Adicionar Item</button>
+          </div>
+          <div id="equipamentos-container" class="equip-list">
+            <div class="empty-equip">
+              <span class="icon">🖥️</span>
+              <strong>Nenhum item adicionado</strong>
+              Clique no botão acima para começar a listar os itens.
             </div>
           </div>
+        </section>
 
-          <!-- Loading Overlay -->
-          <div id="loading" class="loading-overlay hidden">
-            <div class="loading-box">
-              <div class="spinner"></div>
-              <p>Gerando Documento...</p>
+        <!-- Section 3: Analyst Info -->
+        <section class="card">
+          <h2 class="card-title"><span class="badge">3</span> Responsável Técnico</h2>
+          <div class="grid grid-2">
+            <div class="field autocomplete-field">
+              <label for="nome_analista">Nome do Analista</label>
+              <input type="text" id="nome_analista" placeholder="Selecione ou digite"
+                onfocus="onCustomFocus(this, 'analistas')" oninput="onCustomInput(this, 'analistas')"
+                autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="cargo_analista">Cargo</label>
+              <select id="cargo_analista">
+                <!-- Populated dynamically -->
+              </select>
             </div>
           </div>
+        </section>
 
-          <div id="toast" class="toast hidden"></div>
+        <div class="form-actions-bottom">
+          <button class="btn-gerar-large" id="btnGerar" onclick="gerarLaudo()">
+            <span class="btn-icon">⬇</span>
+            <span class="btn-text">Gerar PDF do Documento</span>
+          </button>
+        </div>
+      </main>
 
-        </div> <!-- Closing page-wrapper -->
-      </div> <!-- Closing appContent -->
+      <!-- Global Floating Dropdowns -->
+      <div id="tasyDropdown" class="dropdown-container hidden">
+        <div class="dropdown-search-wrap">
+          <input type="text" id="dropdownSearch" placeholder="Filtrar resultados..."
+            oninput="filterDropdown(this.value)" />
+        </div>
+        <div id="dropdownList" class="dropdown-list"></div>
+      </div>
 
-      <!-- Scripts -->
-      <script src="/static/data_options.js"></script>
-      <script src="/static/app.js"></script>
+      <!-- Custom Options Dropdown -->
+      <div id="customDropdown" class="dropdown-container hidden">
+        <div id="customDropdownList" class="dropdown-list"></div>
+        <div class="dropdown-add-new">
+          <button class="btn-add-option" onclick="handleAddNewOption()">+ Adicionar como novo</button>
+        </div>
+      </div>
+
+      <!-- PDF Viewer Modal -->
+      <div id="pdfViewerModal" class="pdf-modal-overlay hidden">
+        <div class="pdf-modal-content">
+          <div class="pdf-modal-header">
+            <span id="pdfModalTitle" class="pdf-modal-title">Visualizar PDF</span>
+            <button class="pdf-modal-close" onclick="closePdfModal()">✕ Fechar</button>
+          </div>
+          <iframe id="pdfModalFrame" class="pdf-modal-frame" src="" title="Visualizador de PDF"></iframe>
+        </div>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div id="loading" class="loading-overlay hidden">
+        <div class="loading-box">
+          <div class="spinner"></div>
+          <p>Gerando Documento...</p>
+        </div>
+      </div>
+
+      <div id="toast" class="toast hidden"></div>
+
+    </div> <!-- Closing page-wrapper -->
+  </div> <!-- Closing appContent -->
+
+  <!-- Scripts -->
+  <script src="/static/data_options.js"></script>
+  <script src="/static/app.js"></script>
 </body>
 
 </html>
