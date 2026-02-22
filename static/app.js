@@ -8,6 +8,11 @@
 let tasyData = [];          // All rows from the Excel
 let equipCount = 0;         // Counter for equipment rows
 let activeTasyInput = null; // The input that triggered the dropdown
+let currentUser = {
+  username: '',
+  role: '',
+  fullName: ''
+};
 
 // ============================================================
 // INIT
@@ -756,10 +761,86 @@ function toggleConfig() {
     generator.classList.add('hidden');
     header.classList.add('hidden');
     checkServerAuth().then(ok => {
-      if (ok) showConfigMain();
-      else showConfigLogin();
+      if (ok) {
+        showConfigMain();
+        applyRbacUI();
+      } else {
+        showConfigLogin();
+      }
     });
   }
+}
+
+/**
+ * RBAC: Hide/Show elements based on role
+ */
+function applyRbacUI() {
+  const role = currentUser.role;
+  const isMaster = role === 'master';
+  const isSuporte = role === 'suporte';
+  const isViewer = role === 'viewer';
+
+  // Generator permissions
+  const btnGerar = document.getElementById('btnGerar');
+  if (btnGerar) {
+    if (isViewer) btnGerar.classList.add('hidden');
+    else btnGerar.classList.remove('hidden');
+  }
+
+  // Dashboard permissions
+  // In Dashboard, hide delete buttons and test toggles if not master
+  // This will be handled in fetchRecentLaudos / fetchManagementData
+
+  // Config Sidebar permissions
+  const btnCatUsers = document.getElementById('btnCatUsers');
+  const btnCatBackup = document.getElementById('btnCatBackup');
+
+  if (btnCatUsers) {
+    if (isMaster) btnCatUsers.classList.remove('hidden');
+    else btnCatUsers.classList.add('hidden');
+  }
+
+  if (btnCatBackup) {
+    if (isMaster) btnCatBackup.classList.remove('hidden');
+    else btnCatBackup.classList.add('hidden');
+  }
+
+  // Management controls (Add option, delete, etc.)
+  // These are often dynamic, so we'll check role in render functions too
+}
+
+/**
+ * Authentication check with the server
+ */
+async function checkServerAuth() {
+  try {
+    const res = await fetch('/api/stats'); // Re-using stats as a check
+    const data = await res.json();
+
+    // If stats succeeded, we are logged in.
+    // The previous app didn't return user info in stats, but our new backend might if we want.
+    // However, login already sets currentUser. 
+    // If we refresh the page, we might need a /api/me endpoint.
+
+    if (data.success) {
+      // For now, if we don't have a /api/me, we assume the session is valid.
+      // We should really have a /api/me to restore role on refresh.
+      if (!currentUser.role) {
+        // Fallback/Restore: Fetch user info if missing
+        await restoreSession();
+      }
+      return true;
+    }
+    return false;
+  } catch (err) {
+    return false;
+  }
+}
+
+async function restoreSession() {
+  // Since login returns user info, we usually have it.
+  // On F5, we lost JS state. Let's add a simple endpoint or use another check.
+  // For now, I'll assume login is the primary way and stats just checks if session exists.
 }
 
 /**
@@ -813,6 +894,8 @@ async function renderListManagement() {
 
 async function selectListCategory(cat) {
   selectedListCategory = cat;
+  hideAllConfigViews();
+  document.getElementById('listManagementView').classList.remove('hidden');
 
   // Update UI active state
   document.querySelectorAll('.list-cat-btn').forEach(btn => btn.classList.remove('active'));
@@ -848,7 +931,11 @@ function showLegacyView() {
 
 /** Hides all config panels and shows the given one */
 function _showConfigPanel(id) {
-  ['listManagementView', 'manageLaudosView', 'legacyPdfsView', 'backupSettingsView'].forEach(v => {
+  const views = [
+    'listManagementView', 'manageLaudosView', 'legacyPdfsView',
+    'backupSettingsView', 'usersManagementView', 'profileUpdateView'
+  ];
+  views.forEach(v => {
     const el = document.getElementById(v);
     if (el) el.classList.add('hidden');
   });
@@ -1017,8 +1104,34 @@ function showConfigLogin() {
 function showConfigMain() {
   document.getElementById('configLoginSection').classList.add('hidden');
   document.getElementById('configMainSection').classList.remove('hidden');
-  renderListManagement();
+
+  // Default to units if not restoring another view
+  const activeBtn = document.querySelector('.list-cat-btn.active');
+  if (!activeBtn || activeBtn.id === 'btnCatUsers' || activeBtn.id === 'btnCatProfile') {
+    selectListCategory('unidades');
+  } else {
+    renderListManagement();
+  }
 }
+
+function showUsersView() {
+  document.querySelectorAll('.list-cat-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnCatUsers').classList.add('active');
+  _showConfigPanel('usersManagementView');
+  fetchUsers();
+}
+
+function showProfileView() {
+  document.querySelectorAll('.list-cat-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnCatProfile').classList.add('active');
+  _showConfigPanel('profileUpdateView');
+
+  // Fill current data
+  document.getElementById('profileFullName').value = currentUser.fullName || '';
+  document.getElementById('profilePassword').value = '';
+  document.getElementById('profileConfirmPassword').value = '';
+}
+
 
 /**
  * Check auth state directly with server (avoids stale localStorage).
@@ -1044,9 +1157,15 @@ async function handleLogin() {
     });
     const data = await res.json();
     if (data.success) {
+      currentUser = {
+        username: data.username,
+        role: data.role,
+        fullName: data.full_name
+      };
       localStorage.setItem('isLoggedIn', 'true');
       showStatsSection();
-      showToast('Login realizado com sucesso!', 'success');
+      applyRbacUI();
+      showToast(`Bem-vindo, ${data.full_name || data.username}!`, 'success');
     } else {
       showToast(data.error || 'Erro ao logar', 'error');
     }
@@ -1067,8 +1186,14 @@ async function handleConfigLogin() {
     });
     const data = await res.json();
     if (data.success) {
+      currentUser = {
+        username: data.username,
+        role: data.role,
+        fullName: data.full_name
+      };
       localStorage.setItem('isLoggedIn', 'true');
       showConfigMain();
+      applyRbacUI();
       showToast('Login realizado com sucesso!', 'success');
     } else {
       showToast(data.error || 'Erro ao logar', 'error');

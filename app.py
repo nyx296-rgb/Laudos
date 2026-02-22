@@ -28,9 +28,23 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
+            password TEXT NOT NULL,
+            role TEXT DEFAULT 'suporte',
+            full_name TEXT,
+            is_active INTEGER DEFAULT 1
         )
     ''')
+    
+    cursor.execute("PRAGMA table_info(users)")
+    user_columns = [row[1] for row in cursor.fetchall()]
+    user_new_cols = [
+        ('role', 'TEXT DEFAULT "suporte"'),
+        ('full_name', 'TEXT'),
+        ('is_active', 'INTEGER DEFAULT 1')
+    ]
+    for col_name, col_type in user_new_cols:
+        if col_name not in user_columns:
+            cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}")
     # Table for laudos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS laudos (
@@ -69,9 +83,12 @@ def init_db():
     for col_name, col_type in new_cols:
         if col_name not in columns:
             cursor.execute(f"ALTER TABLE laudos ADD COLUMN {col_name} {col_type}")
-    cursor.execute('SELECT * FROM users WHERE username = "admin"')
-    if not cursor.fetchone():
-        cursor.execute('INSERT INTO users (username, password) VALUES ("admin", "admin123")')
+    cursor.execute('SELECT role FROM users WHERE username = "admin"')
+    existing_admin = cursor.fetchone()
+    if not existing_admin:
+        cursor.execute('INSERT INTO users (username, password, role, full_name) VALUES ("admin", "admin123", "master", "Administrador")')
+    elif existing_admin[0] != 'master':
+        cursor.execute('UPDATE users SET role = "master" WHERE username = "admin"')
     
     # Table for settings
     cursor.execute('''
@@ -167,6 +184,35 @@ except Exception:
 def index():
     return render_template('index.html')
 
+from functools import wraps
+
+def role_required(roles):
+    """Decorator to restrict access to specific roles."""
+    if isinstance(roles, str):
+        roles = [roles]
+        
+    def decorator(f):
+       @wraps(f)
+       def decorated_function(*args, **kwargs):
+           if 'user_id' not in session:
+               return jsonify({'success': False, 'error': 'Não autorizado'}), 401
+           
+           if session.get('role') not in roles and 'master' not in roles: # master usually bypasses unless specific
+               # If role is master, allow everything if master is in allowed roles or if we want global access
+               if session.get('role') != 'master':
+                   return jsonify({'success': False, 'error': 'Acesso negado: permissão insuficiente'}), 403
+           
+           # If master exists in session, it passes if master is in roles OR if we just allow master everywhere
+           if session.get('role') == 'master':
+               return f(*args, **kwargs)
+               
+           if session.get('role') in roles:
+               return f(*args, **kwargs)
+               
+           return jsonify({'success': False, 'error': 'Acesso negado: permissão insuficiente'}), 403
+       return decorated_function
+    return decorator
+
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -175,15 +221,144 @@ def login():
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users WHERE username = ? AND password = ?', (user, pw))
+    cursor.execute('SELECT id, username, role, full_name, is_active FROM users WHERE username = ? AND password = ?', (user, pw))
     row = cursor.fetchone()
     conn.close()
     
     if row:
+        if not row[4]: # is_active
+            return jsonify({'success': False, 'error': 'Usuário inativo'}), 403
+            
         session['user_id'] = row[0]
         session['username'] = row[1]
-        return jsonify({'success': True})
+        session['role'] = row[2]
+        session['full_name'] = row[3]
+        
+        return jsonify({
+            'success': True, 
+            'role': row[2], 
+            'username': row[1],
+            'full_name': row[3]
+        })
     return jsonify({'success': False, 'error': 'Usuário ou senha inválidos'}), 401
+
+@app.route('/api/admin/users', methods=['GET'])
+@role_required('master')
+def list_users():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, username, role, full_name, is_active FROM users')
+    rows = cursor.fetchall()
+    conn.close()
+    
+    users = []
+    for r in rows:
+        users.append({'id': r[0], 'username': r[1], 'role': r[2], 'full_name': r[3], 'is_active': bool(r[4])})
+    return jsonify({'success': True, 'data': users})
+
+@app.route('/api/admin/users', methods=['POST'])
+@role_required('master')
+def create_user():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    role = data.get('role', 'suporte')
+    full_name = data.get('full_name')
+    
+    if not username or not password:
+        return jsonify({'success': False, 'error': 'Usuário e senha são obrigatórios'}), 400
+        
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute('INSERT INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)',
+                       (username, password, role, full_name))
+        conn.commit()
+        return jsonify({'success': True})
+    except sqlite3.IntegrityError:
+        return jsonify({'success': False, 'error': 'Usuário já existe'}), 400
+    finally:
+        conn.close()
+
+@app.route('/api/admin/users/<int:user_id>', methods=['PUT'])
+@role_required('master')
+def update_user(user_id):
+    data = request.get_json()
+    role = data.get('role')
+    full_name = data.get('full_name')
+    is_active = data.get('is_active')
+    password = data.get('password')
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    updates = []
+    params = []
+    if role:
+        updates.append("role = ?")
+        params.append(role)
+    if full_name:
+        updates.append("full_name = ?")
+        params.append(full_name)
+    if is_active is not None:
+        updates.append("is_active = ?")
+        params.append(1 if is_active else 0)
+    if password:
+        updates.append("password = ?")
+        params.append(password)
+        
+    if not updates:
+        return jsonify({'success': False, 'error': 'Nenhum dado para atualizar'}), 400
+        
+    params.append(user_id)
+    cursor.execute(f'UPDATE users SET {", ".join(updates)} WHERE id = ?', params)
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+@app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+@role_required('master')
+def delete_user(user_id):
+    if user_id == session.get('user_id'):
+        return jsonify({'success': False, 'error': 'Não é possível excluir o próprio usuário'}), 400
+        
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+@app.route('/api/profile', methods=['PUT'])
+def update_profile():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
+        
+    data = request.get_json()
+    full_name = data.get('full_name')
+    password = data.get('password')
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    updates = []
+    params = []
+    if full_name:
+        updates.append("full_name = ?")
+        params.append(full_name)
+        session['full_name'] = full_name
+    if password:
+        updates.append("password = ?")
+        params.append(password)
+        
+    if not updates:
+        return jsonify({'success': False, 'error': 'Nenhum dado para atualizar'}), 400
+        
+    params.append(session['user_id'])
+    cursor.execute(f'UPDATE users SET {", ".join(updates)} WHERE id = ?', params)
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
 
 @app.route('/api/next-laudo-num')
 def next_laudo_num():
@@ -218,6 +393,7 @@ def get_tasy():
     return jsonify({'success': True, 'data': TASY_DATA_CACHE})
 
 @app.route('/api/gerar-laudo', methods=['POST'])
+@role_required(['master', 'suporte'])
 def gerar_laudo():
     try:
         data = request.get_json()
@@ -303,10 +479,8 @@ def gerar_laudo():
         return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
 
 @app.route('/api/stats')
+@role_required(['master', 'suporte', 'viewer'])
 def get_stats():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
@@ -342,10 +516,8 @@ def get_stats():
     })
 
 @app.route('/api/laudos', methods=['GET'])
+@role_required(['master', 'suporte', 'viewer'])
 def get_laudos():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
@@ -366,10 +538,8 @@ def get_laudos():
     return jsonify({'success': True, 'data': laudos})
 
 @app.route('/api/laudos/<int:id>', methods=['DELETE'])
+@role_required('master')
 def delete_laudo(id):
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('DELETE FROM laudos WHERE id = ?', (id,))
@@ -378,10 +548,8 @@ def delete_laudo(id):
     return jsonify({'success': True})
 
 @app.route('/api/laudos/<int:id>/toggle-test', methods=['POST'])
+@role_required('master')
 def toggle_test(id):
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('UPDATE laudos SET is_test = 1 - is_test WHERE id = ?', (id,))
@@ -390,10 +558,8 @@ def toggle_test(id):
     return jsonify({'success': True})
 
 @app.route('/api/reports/incidences')
+@role_required(['master', 'suporte', 'viewer'])
 def get_incidence_report():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-        
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
@@ -427,6 +593,7 @@ def get_incidence_report():
     })
 
 @app.route('/api/view-pdf/<path:filename>')
+@role_required(['master', 'suporte', 'viewer'])
 def view_pdf(filename):
     # 1. Primary storage check
     pdf_path = os.path.join(PDF_STORAGE, filename)
@@ -455,6 +622,7 @@ def view_pdf(filename):
 # --- Legacy PDF Management ---
 
 @app.route('/api/legacy-pdfs', methods=['GET'])
+@role_required(['master', 'suporte', 'viewer'])
 def list_legacy_pdfs():
     """Lists all PDFs in the 'Laudos antigos' folder."""
     if not os.path.exists(LEGACY_DIR):
@@ -470,11 +638,9 @@ def list_legacy_pdfs():
     return jsonify({'success': True, 'files': files})
 
 @app.route('/api/legacy-pdfs/<path:filename>', methods=['DELETE'])
+@role_required('master')
 def delete_legacy_pdf(filename):
     """Permanently deletes a PDF from the 'Laudos antigos' folder."""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-    
     # Security: ensure no path traversal
     safe_name = os.path.basename(filename)
     fpath = os.path.join(LEGACY_DIR, safe_name)
@@ -486,6 +652,7 @@ def delete_legacy_pdf(filename):
     return jsonify({'success': True})
 
 @app.route('/api/view-legacy-pdf/<path:filename>')
+@role_required(['master', 'suporte', 'viewer'])
 def view_legacy_pdf_direct(filename):
     """Directly serves a PDF from the 'Laudos antigos' folder."""
     safe_name = os.path.basename(filename)
@@ -515,10 +682,8 @@ def get_options():
     return jsonify({'success': True, 'data': options})
 
 @app.route('/api/options', methods=['POST'])
+@role_required('master')
 def add_option():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-        
     data = request.get_json()
     category = data.get('category')
     value = data.get('value')
@@ -538,10 +703,8 @@ def add_option():
     return jsonify({'success': True, 'id': new_id})
 
 @app.route('/api/options/<int:id>', methods=['DELETE'])
+@role_required('master')
 def delete_option(id):
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-        
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('DELETE FROM options WHERE id = ?', (id,))
@@ -550,10 +713,8 @@ def delete_option(id):
     return jsonify({'success': True})
 
 @app.route('/api/options/<int:id>', methods=['PUT'])
+@role_required('master')
 def update_option(id):
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-    
     data = request.get_json()
     value = data.get('value')
     extra = data.get('extra')
@@ -582,10 +743,8 @@ def get_settings():
     return jsonify({'success': True, 'data': settings})
 
 @app.route('/api/settings', methods=['POST'])
+@role_required('master')
 def update_setting():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-    
     data = request.get_json()
     key = data.get('key')
     value = data.get('value')
