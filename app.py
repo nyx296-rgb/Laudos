@@ -15,7 +15,7 @@ JSON_PATH = os.path.join(BASE_DIR, 'cod_tasy.json')
 DB_PATH = os.path.join(BASE_DIR, 'laudos.db')
 PDF_STORAGE = os.path.join(BASE_DIR, 'static', 'laudos')
 LEGACY_DIR = os.path.join(BASE_DIR, 'Laudos antigos')
-NETWORK_PATH_DEFAULT = r'//SERVIDOR/Laudos' # Default if not in DB
+NETWORK_PATH_DEFAULT = r'\\10.0.2.35\Operadora\Departamentos\TI\Backup Laudos 2026' # Default if not in DB
 
 if not os.path.exists(PDF_STORAGE):
     os.makedirs(PDF_STORAGE)
