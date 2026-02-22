@@ -1,0 +1,7 @@
+flask
+python-docx
+openpyxl
+qrcode[pil]
+Pillow
+docx2pdf
+waitress

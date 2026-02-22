@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Laudos Técnicos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <div class="page-wrapper">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="logo-area">
+          <div class="logo-icon">📋</div>
+          <div>
+            <h1 class="app-title">Gerador de Laudos Técnicos</h1>
+            <p class="app-subtitle">Preencha os campos e gere o PDF com QR Code de autenticidade</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <label class="check-test">
+            <input type="checkbox" id="is_test"> Marcar como Teste
+          </label>
+          <button class="btn-mode" id="btnToggleMode" onclick="toggleAppMode()">Modo Solicitação de Compra</button>
+          <button class="btn-mode" id="btnDashboard" onclick="toggleDashboard()">Dashboard</button>
+          <button class="btn-mode" id="btnConfig" onclick="toggleConfig()">Configurações</button>
+          <button class="btn-gerar" id="btnGerar" onclick="gerarLaudo()">
+            <span class="btn-icon">⬇</span>
+            <span class="btn-text">Gerar PDF</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         DASHBOARD VIEW (Stats + Reports only)
+         ============================================================ -->
+    <div id="dashboardPage" class="dashboard-page hidden">
+      <div class="dashboard-content-full">
+        <header class="dashboard-header">
+          <div class="header-left">
+            <button class="btn-back" onclick="toggleDashboard()">← Voltar ao Gerador</button>
+            <h2>📊 Painel Administrativo</h2>
+          </div>
+          <div class="dash-tabs">
+            <button class="tab-btn active" onclick="switchDashTab('stats')">Estatísticas</button>
+            <button class="tab-btn" onclick="switchDashTab('reports')">Relatórios</button>
+          </div>
+          <button class="btn-secondary" onclick="handleLogout()" style="margin: 0">Sair</button>
+        </header>
+
+        <!-- LOGIN SECTION -->
+        <div id="loginSection" class="login-section">
+          <div class="login-card">
+            <div class="login-icon">🔐</div>
+            <h3>Acesso Restrito</h3>
+            <p>Faça login para acessar o painel administrativo.</p>
+            <div class="field">
+              <input type="text" id="username" placeholder="Usuário" />
+            </div>
+            <div class="field">
+              <input type="password" id="password" placeholder="Senha" />
+            </div>
+            <button class="btn-primary" onclick="handleLogin()">Entrar no Sistema</button>
+          </div>
+        </div>
+
+        <!-- DASHBOARD CONTENT -->
+        <div id="statsSection" class="stats-viewport hidden">
+
+          <!-- Tab: Stats -->
+          <div id="tab-content-stats" class="tab-item-content">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <span class="stat-num" id="stat_total">0</span>
+                <span class="stat-label">Laudos Gerados</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num" id="stat_units_count">0</span>
+                <span class="stat-label">Unidades Atendidas</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num" id="stat_items_count">0</span>
+                <span class="stat-label">Tipos de Equipamentos</span>
+              </div>
+              <div class="stat-card stat-purchase">
+                <span class="stat-num" id="stat_compras">0</span>
+                <span class="stat-label">Solicitações de Compra</span>
+              </div>
+            </div>
+
+            <div class="stats-visuals">
+              <div class="chart-card">
+                <h3>Distribuição por Unidade</h3>
+                <div class="chart-container">
+                  <canvas id="chartUnidades"></canvas>
+                </div>
+              </div>
+              <div class="chart-card">
+                <h3>Relatórios por Item</h3>
+                <div class="chart-container">
+                  <canvas id="chartItens"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="dashboard-grid-layout">
+              <div class="stats-table-card">
+                <h3>Resumo por Unidade</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Unidade</th>
+                      <th>Laudos</th>
+                    </tr>
+                  </thead>
+                  <tbody id="unit_stats_body"></tbody>
+                </table>
+              </div>
+
+              <div class="stats-table-card">
+                <h3>Atividades Recentes</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Data</th>
+                      <th>Unidade</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent_laudos_body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Reports -->
+          <div id="tab-content-reports" class="tab-item-content hidden">
+            <div class="report-container">
+              <div class="stats-table-card">
+                <h3>Equipamentos com mais Incidências</h3>
+                <p class="report-desc">Relatório consolidado de defeitos por item e localização.</p>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Equipamento</th>
+                      <th>Unidade / Local</th>
+                      <th>Ocorrências</th>
+                    </tr>
+                  </thead>
+                  <tbody id="incidence_report_body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /statsSection -->
+      </div>
+    </div>
+
+    <!-- ============================================================
+         CONFIGURATION PAGE (Full Page)
+         ============================================================ -->
+    <div id="configPage" class="dashboard-page hidden">
+      <div class="dashboard-content-full">
+        <header class="dashboard-header">
+          <div class="header-left">
+            <button class="btn-back" onclick="toggleConfig()">← Voltar ao Gerador</button>
+            <h2>⚙️ Configurações do Sistema</h2>
+          </div>
+          <button class="btn-secondary" onclick="handleLogout()" style="margin: 0">Sair</button>
+        </header>
+
+        <!-- Config Login Gate -->
+        <div id="configLoginSection" class="login-section hidden">
+          <div class="login-card">
+            <div class="login-icon">🔐</div>
+            <h3>Acesso Restrito</h3>
+            <p>Faça login para acessar as configurações do sistema.</p>
+            <div class="field">
+              <input type="text" id="configUsername" placeholder="Usuário" />
+            </div>
+            <div class="field">
+              <input type="password" id="configPassword" placeholder="Senha" />
+            </div>
+            <button class="btn-primary" onclick="handleConfigLogin()">Entrar no Sistema</button>
+          </div>
+        </div>
+
+        <!-- Config Main Content -->
+        <div id="configMainSection" class="stats-viewport hidden">
+          <div class="tab-item-content">
+            <div class="lists-management-layout">
+
+              <!-- Sidebar -->
+              <div class="lists-sidebar">
+                <div class="sidebar-group-label">Listas</div>
+                <nav id="lists_categories_nav">
+                  <button class="list-cat-btn active" onclick="selectListCategory('unidades')">Unidades</button>
+                  <button class="list-cat-btn" onclick="selectListCategory('setores')">Setores</button>
+                  <button class="list-cat-btn" onclick="selectListCategory('locais')">Locais</button>
+                  <button class="list-cat-btn" onclick="selectListCategory('analistas')">Analistas</button>
+                  <button class="list-cat-btn" onclick="selectListCategory('cargos')">Cargos</button>
+                  <button class="list-cat-btn" onclick="selectListCategory('marcas')">Marcas</button>
+                  <button class="list-cat-btn" onclick="selectListCategory('modelos')">Modelos</button>
+                  <button class="list-cat-btn" onclick="selectListCategory('itens')">Equipamentos</button>
+                </nav>
+                <div class="sidebar-group-label">Gerenciamento</div>
+                <nav>
+                  <button class="list-cat-btn" id="btnCatManage" onclick="showManageView()">Gerenciar Laudos</button>
+                  <button class="list-cat-btn" id="btnCatLegacy" onclick="showLegacyView()">Laudos Antigos</button>
+                </nav>
+                <div class="sidebar-group-label">Sistema</div>
+                <nav>
+                  <button class="list-cat-btn" id="btnCatBackup" onclick="showBackupSettings()">Backup em Rede</button>
+                </nav>
+              </div>
+
+              <!-- Main Content Area -->
+              <div class="lists-main-content">
+
+                <!-- List Items View -->
+                <div id="listManagementView">
+                  <div class="lists-header">
+                    <h3 id="current_list_title">Gerenciar: Unidades</h3>
+                    <div class="add-item-box">
+                      <input type="text" id="newListEntry" placeholder="Novo item...">
+                      <button class="btn-primary" onclick="addNewListItem()" style="width: auto; padding: 8px 16px;">+
+                        Adicionar</button>
+                    </div>
+                  </div>
+                  <div class="items-grid-container">
+                    <ul id="items_dynamic_list" class="dynamic-items-list">
+                      <!-- Items injected by JS -->
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Gerenciar Laudos View -->
+                <div id="manageLaudosView" class="hidden">
+                  <div class="lists-header">
+                    <h3>📊 Gerenciar Laudos</h3>
+                  </div>
+                  <div class="management-header">
+                    <div class="search-box">
+                      <input type="text" id="manageSearch" placeholder="Pesquisar por ID, unidade, item ou descrição..."
+                        oninput="filterManagementTable()">
+                    </div>
+                    <div class="column-selector">
+                      <span class="selector-label">Tipo:</span>
+                      <select id="manageTypeFilter" onchange="fetchManagementData()"
+                        style="padding: 4px; border-radius: 4px; border: 1px solid var(--border); font-size: 0.85rem;">
+                        <option value="">Todos</option>
+                        <option value="laudo">Laudos</option>
+                        <option value="compra">Compras</option>
+                      </select>
+                      <span class="selector-label" style="margin-left: 10px;">Colunas:</span>
+                      <div class="checkbox-group">
+                        <label><input type="checkbox" checked onchange="toggleColumn('data')"> Data</label>
+                        <label><input type="checkbox" checked onchange="toggleColumn('tipo')"> Tipo</label>
+                        <label><input type="checkbox" checked onchange="toggleColumn('unidade')"> Unidade</label>
+                        <label><input type="checkbox" checked onchange="toggleColumn('item_defeito')"> Item</label>
+                        <label><input type="checkbox" onchange="toggleColumn('descricao_problema')"> Descrição</label>
+                        <label><input type="checkbox" onchange="toggleColumn('nome_analista')"> Analista</label>
+                        <label><input type="checkbox" onchange="toggleColumn('situacao')"> Situação</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="management-table-card">
+                    <div class="table-scroll">
+                      <table id="mainManagementTable">
+                        <thead>
+                          <tr id="management_thead_row">
+                            <!-- Dynamic columns -->
+                          </tr>
+                        </thead>
+                        <tbody id="management_table_body"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Laudos Antigos View -->
+                <div id="legacyPdfsView" class="hidden">
+                  <div class="lists-header">
+                    <h3>📂 Laudos Históricos</h3>
+                  </div>
+                  <p class="report-desc" style="margin-bottom: 16px;">PDFs da pasta <strong>Laudos antigos</strong>.
+                    Visualize ou exclua permanentemente do disco.</p>
+                  <div class="legacy-search-wrap" style="margin-bottom: 16px;">
+                    <input type="text" id="legacySearch" placeholder="Filtrar por nome..." oninput="filterLegacyList()"
+                      autocomplete="off">
+                  </div>
+                  <div id="legacyFileList" class="legacy-file-list">
+                    <div class="legacy-loading">Carregando arquivos...</div>
+                  </div>
+                </div>
+
+                <!-- Backup Settings View -->
+                <div id="backupSettingsView" class="hidden">
+                  <div class="lists-header">
+                    <h3>📁 Configurações de Backup em Rede</h3>
+                  </div>
+                  <div class="settings-backup-box"
+                    style="margin-top: 10px; padding: 20px; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border);">
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+                      Configure o caminho UNC (ex: //SERVIDOR/Laudos) para salvar uma cópia automática dos PDFs
+                      gerados.
+                    </p>
+                    <div class="field" style="display: flex; gap: 10px;">
+                      <input type="text" id="networkPathInput" placeholder="Ex: //SERVIDOR/Laudos" style="flex: 1;">
+                      <button class="btn-primary" onclick="saveNetworkPath()"
+                        style="width: auto; padding: 10px 20px;">Salvar Caminho</button>
+                    </div>
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);">
+                      <p style="font-size: 0.8rem; color: var(--text-label);">
+                        💡 <strong>Dica:</strong> Certifique-se de que o servidor onde o App está rodando tem permissão
+                        de escrita nesta pasta.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- /lists-main-content -->
+            </div><!-- /lists-management-layout -->
+          </div>
+        </div><!-- /configMainSection -->
+
+      </div>
+    </div>
+
+    <!-- ============================================================
+         MAIN GENERATOR FORM
+         ============================================================ -->
+    <main class="main-content" id="mainGenerator">
+      <!-- Section 1: Header Info -->
+      <section class="card">
+        <h2 class="card-title"><span class="badge">1</span> Informações do Laudo</h2>
+        <div class="grid grid-4">
+          <div class="field">
+            <label for="id_laudo">Número do Laudo</label>
+            <input type="text" id="id_laudo" placeholder="Gerando..." readonly />
+          </div>
+          <div class="field">
+            <label for="data">Data</label>
+            <input type="date" id="data" />
+          </div>
+          <div class="field autocomplete-field">
+            <label for="unidade">Unidade</label>
+            <input type="text" id="unidade" placeholder="Selecione ou digite" onfocus="onCustomFocus(this, 'unidades')"
+              oninput="onCustomInput(this, 'unidades')" autocomplete="off" />
+          </div>
+          <div class="field autocomplete-field">
+            <label for="setor">Setor</label>
+            <input type="text" id="setor" placeholder="Selecione ou digite" onfocus="onCustomFocus(this, 'setores')"
+              oninput="onCustomInput(this, 'setores')" autocomplete="off" />
+          </div>
+          <div class="field autocomplete-field">
+            <label for="local">Local</label>
+            <input type="text" id="local" placeholder="Selecione ou digite" onfocus="onCustomFocus(this, 'locais')"
+              oninput="onCustomInput(this, 'locais')" autocomplete="off" />
+          </div>
+          <!-- Global Equipment Fields -->
+          <div class="field autocomplete-field">
+            <label for="marca">Marca</label>
+            <input type="text" id="marca" placeholder="Selecione ou digite" onfocus="onCustomFocus(this, 'marcas')"
+              oninput="onCustomInput(this, 'marcas')" autocomplete="off" />
+          </div>
+          <div class="field autocomplete-field">
+            <label for="modelo">Modelo</label>
+            <input type="text" id="modelo" placeholder="Selecione ou digite" onfocus="onCustomFocus(this, 'modelos')"
+              oninput="onCustomInput(this, 'modelos')" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="serie">Nº de Série</label>
+            <input type="text" id="serie" placeholder="Ex: XXXXXX" />
+          </div>
+          <div class="field" style="grid-column: span 2">
+            <label for="situacao">Situação do Equipamento</label>
+            <select id="situacao" class="situacao-select">
+              <option value="Em uso">Em uso</option>
+              <option value="Inativo">Inativo</option>
+              <option value="Em manutenção">Em manutenção</option>
+              <option value="Defeituoso">Defeituoso</option>
+              <option value="Fidelização">Fidelização</option>
+              <option value="Baixa patrimonial">Baixa patrimonial</option>
+              <option value="Aguardando descarte">Aguardando descarte</option>
+            </select>
+          </div>
+          <div class="field autocomplete-field" style="grid-column: span 2">
+            <label for="item_defeito">Equipamento com Defeito</label>
+            <input type="text" id="item_defeito" placeholder="Ex: Microcomputador Dell"
+              onfocus="onCustomFocus(this, 'itens')" oninput="onCustomInput(this, 'itens')" autocomplete="off" />
+          </div>
+        </div>
+        <div class="field problem-desc-field" id="problem_field">
+          <label for="descricao_problema">Descrição do Problema</label>
+          <textarea id="descricao_problema"
+            placeholder="Descreva detalhadamente o problema técnico identificado..."></textarea>
+        </div>
+      </section>
+
+      <!-- Section 2: Equipment List -->
+      <section class="card">
+        <div class="equip-header">
+          <h2 class="card-title"><span class="badge">2</span> Itens / Equipamentos</h2>
+          <button class="btn-add" onclick="addEquipamento()">+ Adicionar Item</button>
+        </div>
+        <div id="equipamentos-container" class="equip-list">
+          <div class="empty-equip">
+            <span class="icon">🖥️</span>
+            <strong>Nenhum item adicionado</strong>
+            Clique no botão acima para começar a listar os itens.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Analyst Info -->
+      <section class="card">
+        <h2 class="card-title"><span class="badge">3</span> Responsável Técnico</h2>
+        <div class="grid grid-2">
+          <div class="field autocomplete-field">
+            <label for="nome_analista">Nome do Analista</label>
+            <input type="text" id="nome_analista" placeholder="Selecione ou digite"
+              onfocus="onCustomFocus(this, 'analistas')" oninput="onCustomInput(this, 'analistas')"
+              autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="cargo_analista">Cargo</label>
+            <select id="cargo_analista">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Global Floating Dropdowns -->
+    <div id="tasyDropdown" class="dropdown-container hidden">
+      <div class="dropdown-search-wrap">
+        <input type="text" id="dropdownSearch" placeholder="Filtrar resultados..."
+          oninput="filterDropdown(this.value)" />
+      </div>
+      <div id="dropdownList" class="dropdown-list"></div>
+    </div>
+
+    <!-- Custom Options Dropdown -->
+    <div id="customDropdown" class="dropdown-container hidden">
+      <div id="customDropdownList" class="dropdown-list"></div>
+      <div class="dropdown-add-new">
+        <button class="btn-add-option" onclick="handleAddNewOption()">+ Adicionar como novo</button>
+      </div>
+    </div>
+
+    <!-- PDF Viewer Modal -->
+    <div id="pdfViewerModal" class="pdf-modal-overlay hidden">
+      <div class="pdf-modal-content">
+        <div class="pdf-modal-header">
+          <span id="pdfModalTitle" class="pdf-modal-title">Visualizar PDF</span>
+          <button class="pdf-modal-close" onclick="closePdfModal()">✕ Fechar</button>
+        </div>
+        <iframe id="pdfModalFrame" class="pdf-modal-frame" src="" title="Visualizador de PDF"></iframe>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay hidden">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <p>Gerando Documento...</p>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+  </div> <!-- Closing page-wrapper -->
+
+  <!-- Scripts -->
+  <script src="/static/data_options.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+
+</html>

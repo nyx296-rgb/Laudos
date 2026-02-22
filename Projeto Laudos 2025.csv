@@ -1,0 +1,65 @@
+"Carimbo de data/hora","Unidade","Setor","Local","Item","Marca","Modelo","Nº. Série","Problema","Situação do Equipamento","Tasy","Quantidade","Nome do Analista","Cargo do Analista"
+"2025/10/01 1:09:56 PM GMT-3","Quality Gold","Administrativo","Campo Grande","Computador","Dell","OPTIPLEX 3070","NT","Solicitação de compra","Solicitação de compra","56697 - COMPUTADOR SEMINOVO DELL OPTIPLEX 3020/7020 CORE 15 -  WIN 10PRO","5","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/01 1:17:02 PM GMT-3","Quality Gold","Administrativo","Campo Grande","Computador","","","NT","","Solicitação de compra","56697 - COMPUTADOR SEMINOVO DELL OPTIPLEX 3020/7020 CORE 15 -  WIN 10PRO","5","Marcus Vinicius de Oliveira","Técnico Responsável"
+"2025/10/07 12:43:19 PM GMT-3","Operadora","DEREG - OPME - Auditoria","Campo Grande","Memória","","","","Solicitação de compra","Solicitação de compra","56581 - 16 GB DE MEMÓRIA TOTAL DO SISTEMA (16 GB X 1) DDR4","11","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/07 1:03:38 PM GMT-3","Operadora","Juridico","Campo Grande","Monitor","","","","","Solicitação de compra","54850 - MONITOR DELL 21.5"" P2219H","3","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/14 10:36:26 AM GMT-3","WorkMed","Contabilidade","Campo Grande","Nobreak","","","NT","","Solicitação de compra","56580 - SSD 512 GB M.2 2280 PCIe NVMe
+56582 - 32 GB DE MEMÓRIA TOTAL DO SISTEMA (16 GB X 2) DDR4","1
+2","Tulio Maravilha","Analista de TI"
+"2025/10/15 12:38:56 PM GMT-3","Operadora","Juridico","Campo Grande","","","","NT","","Solicitação de compra","54850 - MONITOR DELL 21.5"" P2219H","4","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/15 12:40:43 PM GMT-3","Operadora","Juridico","Campo Grande","Monitor","","","NT","","Solicitação de compra","54850 - MONITOR DELL 21.5"" P2219H","4","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/15 4:18:29 PM GMT-3","Operadora","DEREG - OPME - Auditoria","Campo Grande","Memória;Teclado","","","NT","Olá,
+
+Foi verificado que os computadores operam com performance abaixo do necessário, ocasionando lentidão, travamentos e telas piscando.
+
+Se faz necessária a compra de um novo módulo de memória para cada computador do setor.
+","Solicitação de compra","56581 - 16 GB DE MEMÓRIA TOTAL DO SISTEMA (16 GB X 1) DDR4
+56699 - TECLADO LOGITECH MK120","11
+1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/16 8:15:19 AM GMT-3","Operadora","DEREG - OPME - Auditoria","Campo Grande","Memória;Teclado","","","NT","Verificado que os computadores operam com performance
+abaixo do necessário","Solicitação de compra","56581 - 16 GB DE MEMÓRIA TOTAL DO SISTEMA (16 GB X 1) DDR4
+56699 - TECLADO LOGITECH MK120","11
+1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/21 10:58:24 AM GMT-3","Operadora","Call Center","Campo Grande","Computador","","","NT","","Solicitação de compra","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/21 11:00:32 AM GMT-3","Operadora","Call Center","Campo Grande","Computador","","","NT","","Solicitação de compra","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4 ","10","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/21 12:45:01 PM GMT-3","Operadora","DEREG - OPME - Auditoria","Campo Grande","Memória","","","NT","","Solicitação de compra","63812 - Memória 16gb DDR4 3200ghz (Modelo para PC)
+56699 - TECLADO LOGITECH MK120","11
+1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/21 5:06:38 PM GMT-3","CG24h","Atendimento","Campo Grande","Computador","","","NT","Computador com baixíssima performance.","Operante","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4 2666MHZ","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/22 7:36:11 AM GMT-3","Operadora","Financeiro","Santa Cruz","Monitor","Lenovo","H110M-HG4","BRJ405080J","Lento","Inoperante","56700 - MOUSE LOGITECH MK120
+64747 - FONTE DE ALIMENTAÇÃO AVAYA","1
+1","Kevin Vanucci","Gestor de TI"
+"2025/10/22 7:41:48 AM GMT-3","HGSC","Atendimento","Santa Cruz","Monitor;Teclado;Mouse","Dell","OPTIPLEX 3070 Mini","BRJ908070J","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","Operante","56700 - MOUSE LOGITECH MK120
+56700 - MOUSE LOGITECH MK120
+56700 - MOUSE LOGITECH MK120","1
+1
+1","Jonathan Villas Boas","Assistente de TI"
+"2025/10/22 1:28:11 PM GMT-3","CG24h","Atendimento","Campo Grande","Computador","","","NT","Computador está fora do padrão de hardware.","Inoperante","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/23 11:12:05 AM GMT-3","Operadora","Contabilidade","Campo Grande","Monitor","","","NT","","Solicitação de compra","56698 - MONITOR LCD 19"" SEMINOVO","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/27 1:30:02 PM GMT-3","CG Ambulatório","Atendimento","Campo Grande","Computador","","","NT","","Inoperante","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4","4","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/27 1:52:11 PM GMT-3","CG Ambulatório","Atendimento","Campo Grande","Computador","","","NT","","Solicitação de compra","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4 2666MHZ","3","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/27 3:40:58 PM GMT-3","CG Ambulatório","Atendimento","Campo Grande","Computador","","","NT","Conforme consta no chamado 3140, computador do pré-faturamento está inoperante.","Inoperante","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4 2666MHZ","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/27 3:42:39 PM GMT-3","CG Ambulatório","Atendimento","Campo Grande","Computador","","","NT","Conforme chamado 2273, após uma variação de energia, o computador teve a fonte queimada.","Inoperante","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4 2666MHZ","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/27 4:38:50 PM GMT-3","CG Ambulatório","Atendimento","Campo Grande","Computador","","","NT","Computador Guichê 2 do centro de imagem apresentando falhas graves de operação.","Inoperante","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4 2666MHZ","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/27 4:44:07 PM GMT-3","CG Ambulatório","Atendimento","Campo Grande","Computador","","","NT","Conforme conta no chamado 3852, computador Guichê 2 do centro de imagem apresentando falhas graves de operação.","Inoperante","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4 2666MHZ","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/10/30 4:54:59 PM GMT-3","Operadora","Contas Médicas","Campo Grande","Monitor","","","","Conforme solicitado, segue solicitação de compra para monitores do setor de Contas Médicas.","Solicitação de compra","66397 - Monitor 21' OU SUPERIOR, FHD COM PIVOT, HDMI E DISPLAYPORT","3","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/11/05 11:58:39 AM GMT-3","Operadora","Controladoria","Campo Grande","Fonte","HP","PRO DESK 400 G5 SFF","BRJ921349B","Após variação de energia, o computador apresentou falha geral na fonte de alimentação. ","Inoperante","58229 - FONTE P/ HP PRODESK 400G5","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/11/05 12:11:36 PM GMT-3","Operadora","Financeiro","Campo Grande","Memória","Dell","OPTIPLEX 3070","20KF873","Constatado que o computador opera com baixíssima performance.","Operante","63812 - Memória 16gb DDR4 3200ghz (Modelo para PC)","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/11/11 11:47:34 AM GMT-3","Operadora","Recursos Humanos","Campo Grande","Disco (HD/SSD)","","","NT","SSD com problema, necessário realizar a troca. Computador operando com SSD emprestado pela T.I","Operante","59015 - SSD KINGSTON 240GB A400 SATA III","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/11/11 12:57:58 PM GMT-3","Operadora","DEREG - OPME - Auditoria","Campo Grande","Disco (HD/SSD)","","","NT","SSD com problema, necessário realizar a troca. Computador operando com SSD emprestado pela T.I","Operante","59015 - SSD KINGSTON 240GB A400 SATA III","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/11/25 9:46:06 AM GMT-3","Operadora","Call Center","Campo Grande","Computador","HP","PRO DESK 402 G1 SFF","BRJ426CV87","Conforme constatado, o computador encontra-se com problema na gravação da BIOS. Recomendação: Compra de um novo equipamento.","Inoperante","53007 - COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4 2666MHZ","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/11/25 9:56:05 AM GMT-3","Vila Nova","Administrativo","Campo Grande","Fonte","Dell","OPTIPLEX 3020","5J07642","Após variação de energia elétrica, a fonte queimou.","Inoperante","60814
+FONTE PARA COMPUTADOR OPTIPLEX 3020 MODELO: D255AS-00","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/11/28 10:28:38 AM GMT-3","Operadora","Contabilidade","Campo Grande","Teclado","","","","Teclado com conexão intermitente. Necessário a compra.","Solicitação de compra","56699 - TECLADO LOGITECH MK120","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/12/04 4:51:01 PM GMT-3","Operadora","TI","Campo Grande","Fonte","HP","PRO DESK 400 G5 SFF","NT","Fonte queimada após variação de luz","Inoperante","58229 - FONTE P/ HP PRODESK 400G5","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/12/08 11:40:09 AM GMT-3","Operadora","Recursos Humanos","Campo Grande","Disco (HD/SSD)","","","","SSD com problema, necessário realizar a troca.","Inoperante","59015 - SSD KINGSTON 240GB A400 SATA III","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/12/10 10:39:05 AM GMT-3","Vila Nova","Atendimento","Campo Grande","Fonte","Dell","OPTIPLEX 3020","","Após variação de energia elétrica, o computador da supervisão de Vila Nova teve a sua fonte queimada. Recomendação: Compra de uma nova fonte.","Inoperante","66549 - Fonte Atx Dell Optiplex 3020-7020-9020-t7100-sff ","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2025/12/18 12:19:10 PM GMT-3","Operadora","Diretoria","Campo Grande","Acess Point / Unifi","Unifi","Access Point Ubiquiti U7-pro, Wi-fi 7, Tri-band, Poe+","","Após chuva intensa, o mesmo parou de funcionar.","Inoperante","66557 - ACCESS POINT UBIQUITI UNIFI U7-PRO","1","Romayne de Arruda Matos","Analista de TI"
+"2026/01/02 1:36:09 PM GMT-3","HGSC","TI","Santa Cruz","Fonte","Lenovo","","","Carregador notebook do setor de Patrimônio está com problema. Necessário a compra de um novo.","Solicitação de compra","61422 - CARREGADOR PARA NOTEBOOK LENOVO B330-15IKBR 81M1","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2026/01/07 10:49:53 AM GMT-3","Operadora","Diretoria","Campo Grande","Acess Point / Unifi","Unifi","Access Point Ubiquiti U7-pro, Wi-fi 7, Tri-band, Poe+","","","Solicitação de compra","66557 - ACCESS POINT UBIQUITI UNIFI U7-PRO","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2026/01/21 10:16:09 AM GMT-3","CETI","Atendimento","Campo Grande","Adaptadores","N/D","N/D","","Computador da recepção apresentou falhas no adaptador displayport/VGA","Inoperante","53729 - CABO ADAPTADOR CONVERSOR DISPLAYPORT PARA VGA","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2026/01/21 10:55:08 AM GMT-3","Operadora","Diretoria","Campo Grande","Teclado;Mouse","N/D","N/D","","Conforme pedido no chamado 5765, segue solicitação de compra ","Solicitação de compra","56117 - KIT WIRELESS COMBO TECLADO E MOUSE S/FIO LOGITECH MK235","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2026/01/26 10:09:59 AM GMT-3","Operadora","Call Center","Campo Grande","Disco (HD/SSD)","HP","PRO DESK 402 G1 SFF","","Conforme chamado 5937, computador apresenta falhas no sistema por conta de mal funcionamento do SSD. Necessário realizar a troca.","Inoperante","59015 - SSD KINGSTON 240GB A400 SATA III","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2026/02/02 9:47:10 AM GMT-3","Operadora","Comercial PJ","Campo Grande","Disco (HD/SSD)","HP","PRO DESK 400 G5 SFF","","SSD apresenta problema intermitente","Inoperante","59015 - SSD KINGSTON 240GB A400 SATA III","1","Marcus Vinicius de Oliveira","Analista de TI"
+"2026/02/19 4:06:35 PM GMT-3","Operadora","Fidelização","Campo Grande","Computador","HP","PRO DESK 400 G5 SFF","","Conforme solicitado pela gestão","Solicitação de compra","56697 - COMPUTADOR SEMINOVO DELL OPTIPLEX 3020/7020 CORE 15 -  WIN 10PRO","2","Marcus Vinicius de Oliveira","Analista de TI"
+"2026/02/20 2:57:04 PM GMT-3","Operadora","Fidelização","Campo Grande","Headsets","Jabra","Jabra Evolve 20","","Conforme solicitado pela gestão","Solicitação de compra","59202 - HEADSET JABRA - ENVOLVE 20 MONO MS","2","Marcus Vinicius de Oliveira","Analista de TI"

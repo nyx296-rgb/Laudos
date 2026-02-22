@@ -1,0 +1,1436 @@
+[
+  {
+    "Código Tasy": "59487.0",
+    "Descrição": "FONTE PARA DELL 19.5V 65W / MODELO:LA65NS2-01 / PLUG FINO",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "59718.0",
+    "Descrição": "TECLADO E MOUSE SEM FIO",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Teclado"
+  },
+  {
+    "Código Tasy": "59733.0",
+    "Descrição": "TONER IMPRESSORA LEXMARK MODELO E460DN",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "56714.0",
+    "Descrição": "PEN DRIVE 32GB",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Pendrive"
+  },
+  {
+    "Código Tasy": "56580.0",
+    "Descrição": "SSD 512 GB M.2 2280 PCIe NVMe",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "56582.0",
+    "Descrição": "32 GB DE MEMÓRIA TOTAL DO SISTEMA (16 GB X 2) DDR4",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "55997.0",
+    "Descrição": "CABO USB DE 3 METROS",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "56006.0",
+    "Descrição": "LEITOR DE CODIGO DE BARRAS QR CODE",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "56698.0",
+    "Descrição": "MONITOR LCD 19\" SEMINOVO",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Monitor"
+  },
+  {
+    "Código Tasy": "56579.0",
+    "Descrição": "SSD 256 GB M.2 2280 PCIe NVMe",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "56581.0",
+    "Descrição": "16 GB DE MEMÓRIA TOTAL DO SISTEMA (16 GB X 1) DDR4",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "56700.0",
+    "Descrição": "MOUSE LOGITECH MK120",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "56701.0",
+    "Descrição": "HARD DISK SATA SSD XRAYDISK 240GB",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "56560.0",
+    "Descrição": "DESKTOP I5 OU SUPERIOR 8GB SSD 240GB ",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "56697.0",
+    "Descrição": "COMPUTADOR SEMINOVO DELL OPTIPLEX 3020/7020 CORE 15 -  WIN 10PRO",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "56699.0",
+    "Descrição": "TECLADO LOGITECH MK120",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Teclado"
+  },
+  {
+    "Código Tasy": "56703.0",
+    "Descrição": "CABO VGA",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "56702.0",
+    "Descrição": "CABO FORÇA ENERGIA PADRÃO NOVO",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "54267.0",
+    "Descrição": "CABO DE REDE CAT 5E SOHO PLUS",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "54624.0",
+    "Descrição": "ORGANIZADORES DE CABO HORIZONTAL FECHADO 1U",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "54888.0",
+    "Descrição": "CABO P2 X P2 - 3MT",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "54954.0",
+    "Descrição": "IDENTIFICADOR E TESTADOR DE CABOS",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "54625.0",
+    "Descrição": "PATCH PANEL SOHOPLUS CAT.5E",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "54852.0",
+    "Descrição": "MOUSE OPTICO DELL USB MS116",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Mouse"
+  },
+  {
+    "Código Tasy": "54853.0",
+    "Descrição": "TECLADO ALFANUMERICO 107 TECLAS PADRAO PTBR",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Teclado"
+  },
+  {
+    "Código Tasy": "53007.0",
+    "Descrição": "COMPUTADOR HP PRODESK 400 G5 SFF I5 8500 - 8GB DDR4 2666MHZ - HD 500GB - WIN 10PRO  - 5JF18LA#AC4",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "53010.0",
+    "Descrição": "TOTEM (KL SENHA 19)",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "53349.0",
+    "Descrição": "FONTE DE ALIMENTACAO 12V EX INTELBRAS",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "53431.0",
+    "Descrição": "CONTROLE DE ACESSO BIOMÉTRICO INTELBRAS SS 310",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "53433.0",
+    "Descrição": "FONTE COM BATERIA",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "53434.0",
+    "Descrição": "VÍDEO PORTEIRO INTELBRAS IVR 1010",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "CFTV"
+  },
+  {
+    "Código Tasy": "53435.0",
+    "Descrição": "EXTENSÃO DE ÁUDIO 1010 EA",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "53348.0",
+    "Descrição": "CAMERA DOME VIP 1020 D G2",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "CFTV"
+  },
+  {
+    "Código Tasy": "53005.0",
+    "Descrição": "MONITOR HP V19B - 18.5 - 2XM32AA#AC4",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Monitor"
+  },
+  {
+    "Código Tasy": "53006.0",
+    "Descrição": "TECLADO HP USB BUSINESS SLIM BRZL  - 2ZZ25AV#AC4",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Teclado"
+  },
+  {
+    "Código Tasy": "53008.0",
+    "Descrição": "SSD ADATA 240GB SU650 205 SATA - ASU630SS-240GQ-R1",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "53009.0",
+    "Descrição": "MOUSE OTICO HP USB - 2ZY31AV",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Mouse"
+  },
+  {
+    "Código Tasy": "87467.0",
+    "Descrição": "PRINTER SERVER D LINK 301P",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "87551.0",
+    "Descrição": "LEITOR DE CODIGO DE BARRAS QR CODE 2D Honeywell Xenon 1900",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "86835.0",
+    "Descrição": "COMPUTADOR COMPLETO",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "86587.0",
+    "Descrição": "CPU ",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "61054.0",
+    "Descrição": " TONNER PARA IMPRESSORA BROTHER HL-5452DN - Pentra 60",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "61077.0",
+    "Descrição": "ESPUMA AURICULAR PARA HEADSET",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "61255.0",
+    "Descrição": "FONTE REAL 500W AEROCOL",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "60425.0",
+    "Descrição": "INTELBRAS 1130 DOME ( INTERNO) VIP",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "CFTV"
+  },
+  {
+    "Código Tasy": "60426.0",
+    "Descrição": "INTELBRAS 1130 BULLET VIP ( EXTERNO)",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "CFTV"
+  },
+  {
+    "Código Tasy": "61081.0",
+    "Descrição": "PLUG MODULAR 8X8 RJ45        ",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "61232.0",
+    "Descrição": "HDD WESTERN DIGITAL PURPLE 8TB WD81PURZ PURPLE - WESTERN DIGITAL - MODELO: WD81PURZ",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "61254.0",
+    "Descrição": "NOTEBOOK SEMINOVO DELL LATITUDE",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "61278.0",
+    "Descrição": "NVD HD INTELBRAS 16 CANAIS",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "CFTV"
+  },
+  {
+    "Código Tasy": "61292.0",
+    "Descrição": "Unidade de Armazenamento de Dados Dell Storage SCv320 / (HDD 2.4TB, SSD 1.92TB)",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "60524.0",
+    "Descrição": "MONITOR PARA TOTEM ISM-1560E TOUCH SCREEN 15.6, VGA e USB, Preto - GPP156N12003X5",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Monitor"
+  },
+  {
+    "Código Tasy": "61802.0",
+    "Descrição": "ALMOFADA HEADSET ( MICROFONE)",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Fone - Headset"
+  },
+  {
+    "Código Tasy": "61801.0",
+    "Descrição": "ALMOFADA HEADSET (FONE)",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Fone - Headset"
+  },
+  {
+    "Código Tasy": "61053.0",
+    "Descrição": "CILINDRO E260X22G Impressora Lexmark E460dn - Pentra 80",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "62702.0",
+    "Descrição": "Bateria LR 44",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "62968.0",
+    "Descrição": "CAIXA DE CABO DE REDE SOHO PLUS CAT5",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "63812.0",
+    "Descrição": "Memória 16gb DDR4 3200ghz (Modelo para PC)",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "63813.0",
+    "Descrição": "Memória 16gb DDR4 3200ghz (Modelo para notebook) ",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "62106.0",
+    "Descrição": "Switch HP A5500 / JG240A Seminovo",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "64042.0",
+    "Descrição": "Refil impressora Epson 544 BK (Preto)",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "63018.0",
+    "Descrição": "LEITOR DE CODIGO DE BARRAS COM FIO 1D,2D,Qr CODE PORTATIL USB INCLUI SUPORTE-NOVA VIDA",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "62965.0",
+    "Descrição": "EXTENSÃO DE AUDIO INTELBRAS 1010",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "62969.0",
+    "Descrição": "CAMERAS INTELBRAS VIP 1130 G4",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Câmera"
+  },
+  {
+    "Código Tasy": "62970.0",
+    "Descrição": "FONTE INTELBRAS 12V",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "CFTV"
+  },
+  {
+    "Código Tasy": "62633.0",
+    "Descrição": "Tonner para Impressora - Modelo HP Laser Jet P2035N Pentra 80",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "63084.0",
+    "Descrição": "Álcool Isopropílico 1L",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "64026.0",
+    "Descrição": "IMPRESSORA DE PVC ZEBRA ZXP3",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "62971.0",
+    "Descrição": "Teclado para Dell Inspiron P74g P74g001 Br Com Led",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Teclado"
+  },
+  {
+    "Código Tasy": "62206.0",
+    "Descrição": "Monitor de Vídeo Desktop Custom - Modelo: ISM-1560E",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Monitor"
+  },
+  {
+    "Código Tasy": "62243.0",
+    "Descrição": "Cilindro modelo DR720 p/Impressora Brother HL5452DN - Pentra 60",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "62149.0",
+    "Descrição": "Leitor Biométrico U are U 4500 - Digital Persona",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "63081.0",
+    "Descrição": "Pasta Térmica Para Computador",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "62037.0",
+    "Descrição": "Patch Cord Furukawa Cat6a 10GB 1,5m",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "64040.0",
+    "Descrição": "Refil impressora Epson 544 Magenta (Rosa)",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64041.0",
+    "Descrição": "Refil impressora Epson 544 Ciano (Azul) ",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64043.0",
+    "Descrição": "Refil impressora Epson 544 Amarillo (Amarelo)",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64330.0",
+    "Descrição": "Xiaomi MI TV Box S 2ª Geração",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tablet"
+  },
+  {
+    "Código Tasy": "65262.0",
+    "Descrição": "PATCH CORD FURUKAWA AMARELO 1,5M",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "65386.0",
+    "Descrição": "CABEÇA DE IMPR. P/IMPRESSORA ZEBRA",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "64535.0",
+    "Descrição": "Tonner Konica M35501DN",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64747.0",
+    "Descrição": "FONTE DE ALIMENTAÇÃO AVAYA - IN 100-240V ~ 50/60HZ 0.5A - OUT 5V2.0A",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "65506.0",
+    "Descrição": "Switch HP Aruba 1930 48g 4x Sfp 1/10GBe, Rj45 10/100/1000MBp Gerenciável",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "65736.0",
+    "Descrição": "CONECTOR CABO DE REDE RJ45 VAR",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "64536.0",
+    "Descrição": "Tonner MA8DA130-TN-324 Y",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "65726.0",
+    "Descrição": "FONTE P/ MÁQUINA DELL 65W - MODELO: LA65NS2-01\t",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "64533.0",
+    "Descrição": "Tonner Cilindro Brother Dr-3440",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "65261.0",
+    "Descrição": "ORGANIZADOR DE CABOS PARA RACK",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "64203.0",
+    "Descrição": "Hard Disk Externo Seagate Backup Plus 8TB USB 3.0 Cor: Preto",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "65692.0",
+    "Descrição": "CABO HDMI 1.4 25M",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "65585.0",
+    "Descrição": "ADAPTADOR CONVERSOR HOLMI MACHO PARA VGA FEMEA",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "65473.0",
+    "Descrição": "BATERIA ORIGINAL DELL LATITUDE 7000 7280 7480 7490 F3ygt",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "65830.0",
+    "Descrição": "NOTEBOOK SEMINOVO DELL 3490 CORE 15/8 GER",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "64538.0",
+    "Descrição": "Tonner MA8DA130-TN-324 C",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64534.0",
+    "Descrição": "Tonner IR1643",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64537.0",
+    "Descrição": "Tonner MA8DA130-TN-324 K",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64532.0",
+    "Descrição": "Tonner Brother TN-3472",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64539.0",
+    "Descrição": "Tonner MA8DA130-TN-324 M",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64531.0",
+    "Descrição": "Tonner Ricoh SP3710",
+    "Tipo": "Materiais de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "58173.0",
+    "Descrição": "IMPRESSORA CANON IR 1643P",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "59084.0",
+    "Descrição": "CABO DISPLAY PORT",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "59004.0",
+    "Descrição": "MEMORIA RAM 4GB DDR3",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "59202.0",
+    "Descrição": "HEADSET JABRA - ENVOLVE 20 MONO MS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fone - Headset"
+  },
+  {
+    "Código Tasy": "59412.0",
+    "Descrição": "IMPRESSORA DE CARTÃO PVC ",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "59015.0",
+    "Descrição": "SSD KINGSTON 240GB A400 SATA III",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "58094.0",
+    "Descrição": " MEMORIA U DIMM DE 8GB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "59016.0",
+    "Descrição": "MEMORIA PC UDIM DDR4 2666 8GB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "58101.0",
+    "Descrição": " HEADSET JABRA -ENVOLVE 20MONO MS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fone - Headset"
+  },
+  {
+    "Código Tasy": "59087.0",
+    "Descrição": "BATERIA PARA NOTEBOOK DELL. MODELO: DELL WDX0R",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "59717.0",
+    "Descrição": "MEMORIA DDR3 - 8G",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "58093.0",
+    "Descrição": "MEMORIA SO DIMM DE 8GB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "53706.0",
+    "Descrição": "TELEFONE IP YEALINK SIP T19P/E2 LINHA COM DISPLAY",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Telefonia"
+  },
+  {
+    "Código Tasy": "56040.0",
+    "Descrição": "HEADSET INTELBRAS CHS 55 ",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fone - Headset"
+  },
+  {
+    "Código Tasy": "56117.0",
+    "Descrição": "KIT WIRELESS COMBO TECLADO E MOUSE S/FIO LOGITECH MK235 COM CONEXÃO USB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Teclado"
+  },
+  {
+    "Código Tasy": "56508.0",
+    "Descrição": "SERVIDOR HP PORLIANT DL 360 GEN 10 64GB RAM 2 DISCOS 600GB E 6 DISCOS 1,2TB(SAS DISCOS)",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "56394.0",
+    "Descrição": "NOTEBOOK DELL i5 16GB RAM SSD 250GB e HD 500 -  WIN 10PRO",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "56785.0",
+    "Descrição": "MULTIFUNCIONAL RICOH LASER MONOCROMÁTICA A4 SP3710SF - 408266",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56664.0",
+    "Descrição": "BANDEJA DE PAPEL 1 - RICOH - MODELO: SP 377SFNWX",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56665.0",
+    "Descrição": "BANDEJA DE PAPEL 1 + TAMPA DO ADF - RICOH - MODELO: SP 377SFNWX",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56704.0",
+    "Descrição": "ADAPTADOR WIRELLESS DUAL BAND USB AC 600MBPS DWA-171 D LINK",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "56788.0",
+    "Descrição": "Adaptador HDMI X VGA",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "56249.0",
+    "Descrição": "ORGANIZADOR DE CABO FITA VELCRO  3MT SECCON  SB-BKB0502-BL",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "56250.0",
+    "Descrição": "PORCA GAIOLA COM PARAFUSO M4/M5",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "56660.0",
+    "Descrição": "BANDEJA DE PAPEL + TAMPA LATERAL DIREITA - RICOH - MODELO: SP 3510DN",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56661.0",
+    "Descrição": "BOTÃO POWER  - RICOH - MODELO: SP 377DNWX",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56509.0",
+    "Descrição": "STORAGE HP P2000 COM DUAS CONTROLADORAS 12 DISCOS 600GB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "56662.0",
+    "Descrição": "BANDEJA DE PAPEL 1 - RICOH - MODELO: SP 377DNWX",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56666.0",
+    "Descrição": "TAMPA DO ADF - RICOH - MODELO: SP 377SFNWX",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56670.0",
+    "Descrição": "BANDEJA DE PAPEL 1 + DOBRADIÇA ADF - RICOH - MODELO: SP 3510SF",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56673.0",
+    "Descrição": "BOTÃO POWER - RICOH - MODELO: SP 377DN",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56658.0",
+    "Descrição": "TAMPA LATERAL D - RICOH - MODELO: SP 3510DN",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56464.0",
+    "Descrição": "CADEADO PARA SEGURANÇA DE NOTEBOOK CS-10",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "56672.0",
+    "Descrição": "IMPRESSORA - RICOH - MODELO: SP 3510SF",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56032.0",
+    "Descrição": "DISCO DE ESTADO SÓLIDO - SSD 2.5', 512GB SATA, LEITURA 545MB/S, GRAVAÇÃO 430MB/S",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "56671.0",
+    "Descrição": "ADF POR COMPLETO + BANDEJA PAPEL 1 - RICOH - MODELO: SP 3510SF",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56418.0",
+    "Descrição": "MONITOR DELL 18.5\" E1920H",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Monitor"
+  },
+  {
+    "Código Tasy": "56656.0",
+    "Descrição": "ADF POR COMPLETO  - RICOH - MODELO: SP 3510SF",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56657.0",
+    "Descrição": "TAMPA ADF - BROTHER - MODELO: DCP-8157DN",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "56659.0",
+    "Descrição": "BANDEJA DE PAPEL 1 - RICOH - MODELO: SP 3510DN",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "55983.0",
+    "Descrição": "DISCO DE ESTADO SÓLIDO - SSD 2.5', 256GB SATA, LEITURA 545MB/S, GRAVAÇÃO 430MB/S",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "56247.0",
+    "Descrição": "PATCH PANEL SOHOPLUS CAT.6",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "56248.0",
+    "Descrição": "CABO DE REDE CAT 6 SOHO PLUS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "56251.0",
+    "Descrição": "ALICATE DE CRIMPAR HIKARI HK-304",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "57600.0",
+    "Descrição": "PROJETOR FULL HD 2500 LUMENS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Monitor"
+  },
+  {
+    "Código Tasy": "57610.0",
+    "Descrição": "ALICATE PUSH DOWN BAR GOA CINZA",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "57614.0",
+    "Descrição": "PATCH CORD CAT 6 CERTIFICADO FURUKAWA 2 M",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "57187.0",
+    "Descrição": "MEMORIA 32GB - 2RX4 DDR4 LRDIMM 2666MHZ",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "57613.0",
+    "Descrição": "PATCH CORD CAT 5E CERTIFICADO FURUKAWA 2 M",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "57617.0",
+    "Descrição": "PATCH CORD CAT 6 CERTIFICADO FURUKAWA 3 M",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "57687.0",
+    "Descrição": "MEMORIA RAM: 4GB DDR4 (2666)",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "57563.0",
+    "Descrição": "RADIO COMUNICADOR INTELBRAS RC4000",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "57231.0",
+    "Descrição": "INTERFACE REDE ETHERNET P/DL210",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "57269.0",
+    "Descrição": "PEDAL PARA CAPTURA DE IMAGEM USB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "57611.0",
+    "Descrição": "PATCH CORD CAT 5E CERTIFICADO FURUKAWA 1,5 M",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "57616.0",
+    "Descrição": "PATCH CORD CAT 5E CERTIFICADO FURUKAWA 3 M",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "57658.0",
+    "Descrição": "FITA TZE 231 BRANCA 12MM PARA ROTULADOR BROTHER",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "57186.0",
+    "Descrição": "MEMORIA 64GB - 4RX4 DDR4 LRDIMM 2666MHZ",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "57612.0",
+    "Descrição": "PATCH CORD CAT 6 CERTIFICADO FURUKAWA 1,5 M",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "57312.0",
+    "Descrição": "UNIDADE USB FINA DE DVD +/- RW DA DELL - DW316",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "57609.0",
+    "Descrição": "TESTADOR DE CABOS NOYAFA 8220",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "52991.0",
+    "Descrição": "EQUIPAMENTO DE INFORMÁTICA",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "54985.0",
+    "Descrição": "MEMORIA RAM 8GB DDR4 P/ NOTEBOOK/DELL OPTPLEX 3070",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "55313.0",
+    "Descrição": "MODULO SIMON 19 RJ 11",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "53848.0",
+    "Descrição": "TELEFONE IP FANVIL X1P 1 LINHA",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Telefonia"
+  },
+  {
+    "Código Tasy": "53945.0",
+    "Descrição": "LEITOR DE CARTAO MAGNETICO USB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "53729.0",
+    "Descrição": "CABO ADAPTADOR CONVERSOR DISPLAYPORT PARA VGA",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "55847.0",
+    "Descrição": "HEAD SET AVAYA",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fone - Headset"
+  },
+  {
+    "Código Tasy": "54626.0",
+    "Descrição": "RACK 19'' 16U X 570MM",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "55091.0",
+    "Descrição": "ROTEADOR MIKROTIK 1100AHX4",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "54989.0",
+    "Descrição": "NOTEBOOK DELL i7 16GB RAM SSD 250GB e HD 500 -  WIN 10PRO",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "55002.0",
+    "Descrição": "RADIO COMUNICADOR BAOFENG WALKIE TALKIE BF-777S",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "55327.0",
+    "Descrição": "SWITCH HPE 5120-48G EI (JE067A)",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "54851.0",
+    "Descrição": "MICROCOMPUTADOR DELL OPTIPLEX 3070",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "54850.0",
+    "Descrição": "MONITOR DELL 21.5\" P2219H",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Monitor"
+  },
+  {
+    "Código Tasy": "53705.0",
+    "Descrição": "ACCESS POINT UBIQUITI NETWORKS UNIFI AC PRO AP UAP-AC-PRO",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "55639.0",
+    "Descrição": "FONTE CARREGADOR NOTEBOOK 20V 2.25A  MOD: PA-1450-55LB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "53792.0",
+    "Descrição": "ANEL ORING 26X3 NRITILICA PRETO",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "53151.0",
+    "Descrição": "Switch HP 1950-48g-2SFP+ 2XGT 48portas TAG JG961A",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "53475.0",
+    "Descrição": "PROCESSADOR: INTEL CORE I7-8 GERAÇÃO",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "53477.0",
+    "Descrição": "PLACA DE VÍDEO: GTX 1050 4GB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "53479.0",
+    "Descrição": "HD: 1TB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "53481.0",
+    "Descrição": "PLACA MÃE: DDR4, SOCKET 1151",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "53478.0",
+    "Descrição": "SSD: 480GB ",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "53476.0",
+    "Descrição": "MEMORIA RAM: 16GB DDR4 (2X8GB)",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Memória"
+  },
+  {
+    "Código Tasy": "53480.0",
+    "Descrição": "FONTE DE ALIMENTAÇÃO: 850W",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "53436.0",
+    "Descrição": "MONITOR LED 23,8 \" IPS WIDESCREEN 24MK430H LG",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Monitor"
+  },
+  {
+    "Código Tasy": "53482.0",
+    "Descrição": "GABINETE: MODELO MID TOWER",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "85388.0",
+    "Descrição": "ORGANIZADOR P/FIO E CABOS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "61235.0",
+    "Descrição": "DTC1500 FLIPPER UPGRADE",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "61386.0",
+    "Descrição": "MOD. TOMADA RJ45 CAT.5E S19",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "61422.0",
+    "Descrição": "CARREGADOR PARA NOTEBOOK LENOVO B330-15IKBR 81M1",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "61384.0",
+    "Descrição": "CABO REDE AZUL CX35M",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "60554.0",
+    "Descrição": "TONER IMPRESSORA BROTHER TN3332",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "60555.0",
+    "Descrição": "TONER IMPRESSORA BROTHER TN3382",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "61553.0",
+    "Descrição": "NOTEBOOK I5 8ª GERAÇÃO OU SUPERIOR - 8GB RAM - SSD 256 GB OU SUPERIOR - TELA 15\"",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "60814.0",
+    "Descrição": "FONTE PARA COMPUTADOR OPTIPLEX 3020 MODELO: D255AS-00",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "60540.0",
+    "Descrição": "NOBREAK APC BACK-UPS 600VA 115V-BZ600-BR",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "60502.0",
+    "Descrição": "SSD 120GB KINGSTON",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "SSD"
+  },
+  {
+    "Código Tasy": "61388.0",
+    "Descrição": "RACK PADRÃO 19 -12UX400MM",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "61199.0",
+    "Descrição": "IMPRESSORA FARGO HID DTC 1500 S1 SIMPLES",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "61202.0",
+    "Descrição": "KIT DE LIMPEZA PARA IMPRESSORAS DTC400.C50,DTC1000,DTC1250E,DTC4000,DTC4250E,DTC4500E,DTC4500E E DT450 DTC SERIE",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "61200.0",
+    "Descrição": "FITA RIBBON YMCKO PARA DTC 1500  500 IMAGENS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "61201.0",
+    "Descrição": "CARTAO DE PVC CR80 ULTRA - CRACHA/CARTEIRINHA (8,6CM X 5,5CM)",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "61544.0",
+    "Descrição": "CABO ADAPTADOR CONVERSOR DISPLAYPORT PARA HDMI - (DISPLAYPORT M X HDMI F)",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Cabos"
+  },
+  {
+    "Código Tasy": "61611.0",
+    "Descrição": "CARTÃO DE PVC CR80 ULTRA(8,6CNX5,5CM) ESPESSURA 0,76MM(500 UNIDADES)",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "61445.0",
+    "Descrição": "NOBREAK SENIUM - SENOIDAL, 3200VA, TRIVOLT NA ENTRADA, SAÍDA 115V/220V COM 8 TOMADAS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "60050.0",
+    "Descrição": "NOTEBOOK 8GB COM SSD 250GB PROCESSADOR I3",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "61387.0",
+    "Descrição": "ORGANIZADOR DE CABO 19X1U",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "61444.0",
+    "Descrição": "NOBREAK NEP - SENOIDAL, 1200VA, ENTRADA TRIVOLT, SAIDA 115V COM 06 TOMADAS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "61421.0",
+    "Descrição": "BATERIA PARA NOTEBOOK LENOVO B330-15IKBR 81M1",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "61610.0",
+    "Descrição": "FITA RIBBON DTC 1500 BLACK 3000 IMAGENS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "61385.0",
+    "Descrição": "PATCH PANEL FURUKAWA CAT5E 24",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "62210.0",
+    "Descrição": "CAIXA SELETORA ",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "63021.0",
+    "Descrição": "Notebook Dell Inspiron 15 - 12ª geração Intel® Core&#x2122;  i5-1235U (10-core, cache de 12MB, até 4.4GHz)",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "63755.0",
+    "Descrição": " Impressora de Cartões Datacard Entrust SD260",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "62049.0",
+    "Descrição": "Fonte P.O.E",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "65149.0",
+    "Descrição": "CAMERA WEBCAM LOGITECH FULL HD C92OS",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Câmera"
+  },
+  {
+    "Código Tasy": "65294.0",
+    "Descrição": "TABLET SAMSUNG GALAXY 11 A9 ",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tablet"
+  },
+  {
+    "Código Tasy": "65536.0",
+    "Descrição": "RECEPTOR SMART TV BOX AQUARIO STV-3000 PADRAO 4K 8GB",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tablet"
+  },
+  {
+    "Código Tasy": "65613.0",
+    "Descrição": "MODULO SIMON MOD 19 P/COMP RJ 45 CAT 5E",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "64680.0",
+    "Descrição": "Tonner E260 Premium Laser Toner Cartridge - Pentra 80",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "64708.0",
+    "Descrição": "Nobreak Apc Stay Microsol 700va Usb Ent Bivolt Saída 110v/115v Cinza-escuro Similar NHS Mini 4 e Ts Shara",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Outros"
+  },
+  {
+    "Código Tasy": "64756.0",
+    "Descrição": "CÂMERA TV IP BULLET VIP 1230B G4",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "CFTV"
+  },
+  {
+    "Código Tasy": "65061.0",
+    "Descrição": "TESTADOR DE CABOS NOYAFA NF-8209",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "66066.0",
+    "Descrição": "TONER IMPRESSORA CANON 1643",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "66067.0",
+    "Descrição": "TONER IMPRESSORA BROTHER TN3472",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "66068.0",
+    "Descrição": "TONER IMPRESSORA KIOCERA ECOSYS M3550IDN",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "66047.0",
+    "Descrição": "FONTE AVAYA 1600",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fonte"
+  },
+  {
+    "Código Tasy": "65684.0",
+    "Descrição": "IDEAPAD 1I INTEL CORE I5 12° GERAÇÃO 8GB RAM 512GB SSD TELA HD 15,6\" - WINDOWS 11",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "PC"
+  },
+  {
+    "Código Tasy": "65384.0",
+    "Descrição": "TABLET LENOVO TAB M9 OCTA-CORE 64 GB WI-FI - PRATA ZAC30198BR",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tablet"
+  },
+  {
+    "Código Tasy": "65615.0",
+    "Descrição": "PLUG FITA SUPER BRILHO 3537",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "65153.0",
+    "Descrição": "IMPRESSORA EPSON - ECOTANK L1250",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Impressora"
+  },
+  {
+    "Código Tasy": "65453.0",
+    "Descrição": "HEADSET INTELBRAS THS 40 R19 - REF: 4245",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Fone - Headset"
+  },
+  {
+    "Código Tasy": "66007.0",
+    "Descrição": "Câmera Webcam Logitech C920e Full  Hd 30fps Cor Preto",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Câmera"
+  },
+  {
+    "Código Tasy": "66065.0",
+    "Descrição": "TONER IMPRESSORA RICOH SP 3710",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Tonner"
+  },
+  {
+    "Código Tasy": "65621.0",
+    "Descrição": "MODULO SIMON MOD 19 CEGO 19800-30",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "65558.0",
+    "Descrição": "CONECTOR TERMINAL P/ CABO DE REDE RJ- 45",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Rede"
+  },
+  {
+    "Código Tasy": "65172.0",
+    "Descrição": "CAMERA MODELO VIP 1230 D G5",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "Câmera"
+  },
+  {
+    "Código Tasy": "65557.0",
+    "Descrição": "FONTE 12V DC",
+    "Tipo": "Equipamentos de Informática",
+    "Classificação": "CFTV"
+  }
+]
