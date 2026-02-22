@@ -393,7 +393,7 @@ def next_laudo_num():
     next_num = f"{max_num + 1:03d}"
     return jsonify({'success': True, 'next_id': f"{next_num}/{year}"})
 
-@app.route('/api/logout')
+@app.route('/api/logout', methods=['POST'])
 def logout():
     session.clear()
     return jsonify({'success': True})
