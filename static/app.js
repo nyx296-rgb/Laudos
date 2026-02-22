@@ -13,6 +13,7 @@ let currentUser = {
   role: '',
   fullName: ''
 };
+let visibleColumns = new Set(['data', 'tipo', 'unidade', 'item_defeito']);
 
 // ============================================================
 // INIT
