@@ -4,7 +4,7 @@ import json
 import sqlite3
 import re
 from datetime import datetime
-from flask import Flask, request, jsonify, send_file, render_template, session, redirect, url_for
+from flask import Flask, request, jsonify, send_file, send_from_directory, render_template, session, redirect, url_for
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = 'laudo-secret-key-123'  # Simple key for sessions
@@ -472,10 +472,19 @@ def gerar_laudo():
             
             network_path = row[0] if row else NETWORK_PATH_DEFAULT
             
-            if network_path and os.path.exists(network_path):
-                shutil.copy2(output_path, os.path.join(network_path, persistent_filename))
+            if network_path:
+                # Debugging: Log target path
+                print(f"Tentando backup para: {network_path}")
+                if not os.path.exists(network_path):
+                    print(f"Caminho de rede não encontrado ou inacessível: {network_path}")
+                else:
+                    target_file = os.path.join(network_path, persistent_filename)
+                    shutil.copy2(output_path, target_file)
+                    print(f"Backup concluído com sucesso: {target_file}")
         except Exception as net_err:
-            print(f"Erro ao copiar para rede: {net_err}")
+            print(f"Erro crítico ao copiar para rede: {net_err}")
+            import traceback
+            traceback.print_exc()
 
         filename = os.path.basename(output_path)
         is_pdf = filename.endswith('.pdf')
@@ -640,6 +649,11 @@ def view_pdf(filename):
                         return send_file(os.path.join(legacy_dir, f), mimetype='application/pdf')
     
     return "Arquivo não encontrado", 404
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 # --- Legacy PDF Management ---
 

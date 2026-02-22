@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerador de Laudos Técnicos</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
@@ -17,7 +18,7 @@
   <div id="globalLoginSection" class="login-overlay hidden">
     <div class="login-glass-container">
       <div class="login-left-panel">
-        <div class="login-logo-circle">📋</div>
+        <img src="/static/img/logo_cemeru.png" class="login-logo-img">
         <h2>Sistema de Laudos</h2>
         <p>Gerenciamento Técnico e Solicitações</p>
       </div>
@@ -28,16 +29,14 @@
 
           <div class="field login-field">
             <label>Usuário</label>
-            <div class="input-with-icon">
-              <span class="icon">👤</span>
+            <div class="input-with-icon no-icon">
               <input type="text" id="globalUsername" placeholder="Digite seu usuário" autocomplete="username" />
             </div>
           </div>
 
           <div class="field login-field">
             <label>Senha</label>
-            <div class="input-with-icon">
-              <span class="icon">🔒</span>
+            <div class="input-with-icon no-icon">
               <input type="password" id="globalPassword" placeholder="••••••••" autocomplete="current-password" />
             </div>
           </div>
@@ -60,15 +59,14 @@
       <header class="app-header">
         <div class="header-inner">
           <div class="logo-area">
-            <div class="logo-icon">📋</div>
+            <img src="/static/img/logo_cemeru.png" class="header-logo-img">
             <div>
               <h1 class="app-title">Gerador de Laudos Técnicos</h1>
-              <p class="app-subtitle">Preencha os campos e gere o PDF com QR Code de autenticidade</p>
             </div>
           </div>
           <div class="header-nav">
-            <button class="btn-nav active" id="btnNavGen" onclick="gotoGenerator()">Gerador</button>
-            <button class="btn-nav" id="btnNavPurchase" onclick="gotoPurchaseMode()">Modo Compra</button>
+            <button class="btn-nav active" id="btnNavGen" onclick="gotoGenerator()">Laudos</button>
+            <button class="btn-nav" id="btnNavPurchase" onclick="gotoPurchaseMode()">Solicitação</button>
             <button class="btn-nav" id="btnNavDashboard" onclick="toggleDashboard()">Dashboard</button>
             <button class="btn-nav" id="btnNavConfig" onclick="toggleConfig()">Configurações</button>
           </div>
@@ -411,8 +409,7 @@
                       <div class="profile-card-body">
                         <div class="field">
                           <label>Nome de Exibição</label>
-                          <div class="input-with-icon">
-                            <span class="icon">👤</span>
+                          <div class="input-with-icon no-icon">
                             <input type="text" id="profileFullName" placeholder="Seu nome completo">
                           </div>
                         </div>
@@ -420,8 +417,7 @@
                         <div class="grid grid-2" style="gap: 16px;">
                           <div class="field">
                             <label>Nova Senha</label>
-                            <div class="input-with-icon">
-                              <span class="icon">🔒</span>
+                            <div class="input-with-icon no-icon">
                               <input type="password" id="profilePassword" placeholder="******">
                             </div>
                             <small class="field-hint">Deixe em branco para não alterar</small>
@@ -429,8 +425,7 @@
 
                           <div class="field">
                             <label>Confirmar Senha</label>
-                            <div class="input-with-icon">
-                              <span class="icon">🔒</span>
+                            <div class="input-with-icon no-icon">
                               <input type="password" id="profileConfirmPassword" placeholder="******">
                             </div>
                           </div>
@@ -499,7 +494,9 @@
         <section class="card">
           <h2 class="card-title"
             style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <span><span class="badge">1</span> Informações do Laudo</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="badge">1</span> Informações do Laudo
+            </div>
             <label class="check-test-label">
               <input type="checkbox" id="is_test" class="checkbox-mini"> MODO TESTE
             </label>
@@ -579,7 +576,6 @@
             <div class="empty-equip">
               <span class="icon">🖥️</span>
               <strong>Nenhum item adicionado</strong>
-              Clique no botão acima para começar a listar os itens.
             </div>
           </div>
         </section>

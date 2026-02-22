@@ -516,19 +516,16 @@ function setAppMode(mode) {
  */
 function applyUIMode() {
   const title = document.querySelector('.app-title');
-  const subtitle = document.querySelector('.app-subtitle');
   const problemField = document.getElementById('problem_field');
   const body = document.body;
 
   if (isPurchaseMode) {
     body.classList.add('purchase-mode');
-    if (title) title.textContent = 'Solicitação de Compra';
-    if (subtitle) subtitle.textContent = 'Preencha os itens para solicitação de nova aquisição';
+    if (title) title.textContent = 'Solicitações de Compra';
     if (problemField) problemField.classList.add('hidden');
   } else {
     body.classList.remove('purchase-mode');
-    if (title) title.textContent = 'Gerador de Laudos Técnicos';
-    if (subtitle) subtitle.textContent = 'Preencha os campos e gere o PDF com QR Code de autenticidade';
+    if (title) title.textContent = 'Laudos Técnicos';
     if (problemField) problemField.classList.remove('hidden');
   }
 
@@ -579,7 +576,13 @@ async function toggleDashboard() {
   dash.classList.remove('hidden');
   updateNavActive('btnNavDashboard');
 
-  const ok = await checkServerAuth();
+  let ok = false;
+  if (currentUser && currentUser.username) {
+    ok = true;
+  } else {
+    ok = await checkServerAuth();
+  }
+
   if (ok) {
     showStatsSection();
     fetchStats();
@@ -599,7 +602,13 @@ async function toggleConfig() {
   config.classList.remove('hidden');
   updateNavActive('btnNavConfig');
 
-  const ok = await checkServerAuth();
+  let ok = false;
+  if (currentUser && currentUser.username) {
+    ok = true;
+  } else {
+    ok = await checkServerAuth();
+  }
+
   if (ok) {
     showConfigMain();
     if (typeof selectListCategory === 'function') {
@@ -730,22 +739,29 @@ async function onAfterLogin() {
  */
 async function checkServerAuth() {
   try {
-    const res = await fetch('/api/stats');
+    const res = await fetch('/api/me');
     if (res.status === 401) {
-      currentUser = { username: '', role: '', fullName: '' };
+      if (currentUser) {
+        currentUser.username = '';
+        currentUser.role = '';
+        currentUser.fullName = '';
+      }
       return false;
     }
-    const meRes = await fetch('/api/me');
-    if (meRes.ok) {
-      const me = await meRes.json();
+
+    if (res.ok) {
+      const me = await res.json();
       if (me.success) {
+        if (!currentUser) currentUser = {};
         currentUser.username = me.username || '';
         currentUser.role = me.role || '';
         currentUser.fullName = me.full_name || '';
+        return true;
       }
     }
-    return true;
+    return false;
   } catch (err) {
+    console.error("Auth check failed:", err);
     return false;
   }
 }
