@@ -625,11 +625,13 @@ function applyRbacUI() {
   if (!currentUser) return;
   const role = currentUser.role;
   const isMaster = role === 'master';
+  const isAdmin = role === 'admin';
+  const canManageUsers = isMaster || isAdmin;
   const isViewer = role === 'viewer';
 
-  // Generate button
-  const btnGerar = document.getElementById('btnGerar');
-  if (btnGerar) btnGerar.classList.toggle('hidden', isViewer);
+  // Nav Buttons
+  const btnGen = document.getElementById('btnNavGen');
+  if (btnGen) btnGen.classList.toggle('hidden', isViewer);
 
   // Purchase Nav
   const btnPurchase = document.getElementById('btnNavPurchase');
@@ -639,9 +641,13 @@ function applyRbacUI() {
   const btnConfig = document.getElementById('btnNavConfig');
   if (btnConfig) btnConfig.classList.toggle('hidden', isViewer);
 
+  // Generate button
+  const btnGerar = document.getElementById('btnGerar');
+  if (btnGerar) btnGerar.classList.toggle('hidden', isViewer);
+
   // User/Config Management Tabs
   const btnCatUsers = document.getElementById('btnCatUsers');
-  if (btnCatUsers) btnCatUsers.classList.toggle('hidden', !isMaster);
+  if (btnCatUsers) btnCatUsers.classList.toggle('hidden', !canManageUsers);
 
   const btnCatBackup = document.getElementById('btnCatBackup');
   if (btnCatBackup) btnCatBackup.classList.toggle('hidden', !isMaster);
@@ -772,6 +778,10 @@ function onLoginSuccess() {
 
   applyRbacUI();
   onAfterLogin();
+  
+  if (currentUser.role === 'viewer') {
+    toggleDashboard();
+  }
 }
 
 /**
@@ -867,26 +877,57 @@ async function gerarLaudo() {
       throw new Error(err.error || `HTTP ${res.status}`);
     }
 
-    const blob = await res.blob();
-    const contentDisposition = res.headers.get('Content-Disposition') || '';
-    const match = contentDisposition.match(/filename="?([^"]+)"?/);
-    const filename = match ? match[1] : `Laudo_${idLaudo}.pdf`;
+    const dataRes = await res.json();
+    if (!dataRes.success) {
+      throw new Error(dataRes.error || "Erro ao gerar arquivo");
+    }
 
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-
+    const filename = dataRes.filename;
+    
+    showPostGenModal(filename, isPurchaseMode ? "Solicitação criada com sucesso!" : "Documento criado com sucesso!");
     fetchNextLaudoNum();
-    showToast(`✅ Sucesso! "${filename}" gerado.`, 'success');
   } catch (err) {
     showToast('Erro: ' + err.message, 'error');
   } finally {
     showLoading(false);
+  }
+}
+
+let generatedFilename = "";
+
+function showPostGenModal(filename, msg) {
+  generatedFilename = filename;
+  const msgEl = document.getElementById('postGenMessage');
+  if (msgEl) msgEl.textContent = msg;
+  
+  const btnVis = document.getElementById('btnPostGenVisualizar');
+  const btnBx = document.getElementById('btnPostGenBaixar');
+  
+  btnVis.onclick = () => {
+    closePostGenModal();
+    const frame = document.getElementById('pdfModalFrame');
+    if (frame) frame.src = `/api/view-pdf/${encodeURIComponent(filename)}`;
+    document.getElementById('pdfViewerModal').classList.remove('hidden');
+  };
+  
+  btnBx.onclick = () => {
+    window.location.href = `/api/view-pdf/${encodeURIComponent(filename)}?download=1`;
+  };
+  
+  document.getElementById('postGenModal').classList.remove('hidden');
+}
+
+function closePostGenModal() {
+  document.getElementById('postGenModal').classList.add('hidden');
+  if (document.getElementById('is_test') && !document.getElementById('is_test').checked) {
+      const equipCont = document.getElementById('equipamentos-container');
+      if (equipCont) {
+        equipCont.innerHTML = '';
+        equipCount = 0;
+        addEquipamento();
+      }
+      const descProb = document.getElementById('descricao_problema');
+      if (descProb) descProb.value = '';
   }
 }
 
@@ -1256,14 +1297,17 @@ function renderUsersTable(users) {
     return;
   }
 
+  const canDelete = currentUser.role === 'master';
+  
   tbody.innerHTML = users.map(u => {
-    const isAdmin = u.role === 'master';
+    const isTargetMaster = u.role === 'master';
     const statusClass = u.is_active ? 'active' : 'inactive';
     const statusText = u.is_active ? 'Ativo' : 'Inativo';
     const statusDot = u.is_active ? '●' : '○';
 
     const roleLabels = {
-      'master': 'Administrador',
+      'master': 'Administrador Geral',
+      'admin': 'Administrador',
       'suporte': 'Suporte Técnico',
       'viewer': 'Visualizador'
     };
@@ -1291,7 +1335,7 @@ function renderUsersTable(users) {
             <button class="btn-edit-small" onclick="showEditUserModal(${JSON.stringify(u).replace(/"/g, '&quot;')})" title="Editar Usuário">
               <span>✏️</span>
             </button>
-            ${!isAdmin ? `
+            ${(canDelete && !isTargetMaster) ? `
               <button class="btn-del-small" onclick="deleteUser(${u.id})" title="Excluir Usuário">
                 <span>🗑️</span>
               </button>

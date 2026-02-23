@@ -261,7 +261,7 @@ def login():
     return jsonify({'success': False, 'error': 'Usuário ou senha inválidos'}), 401
 
 @app.route('/api/admin/users', methods=['GET'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def list_users():
     print("Listing system users...")
     conn = sqlite3.connect(DB_PATH)
@@ -277,7 +277,7 @@ def list_users():
     return jsonify({'success': True, 'data': users})
 
 @app.route('/api/admin/users', methods=['POST'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def create_user():
     data = request.get_json()
     username = data.get('username')
@@ -309,7 +309,7 @@ def create_user():
         conn.close()
 
 @app.route('/api/admin/users/<int:user_id>', methods=['PUT'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def update_user(user_id):
     data = request.get_json()
     role = data.get('role')
@@ -474,7 +474,12 @@ def gerar_laudo():
         output_path, temp_dir = generate_laudo(data)
         
         laudo_id = data.get('id_laudo', 'laudo').replace("/", "_")
-        persistent_filename = f'Laudo_{laudo_id}.pdf'
+        
+        filename = os.path.basename(output_path)
+        is_pdf = filename.endswith('.pdf')
+        ext = '.pdf' if is_pdf else '.docx'
+        
+        persistent_filename = f'Laudo_{laudo_id}{ext}'
         persistent_path = os.path.join(PDF_STORAGE, persistent_filename)
         
         # Save a persistent copy locally
@@ -504,24 +509,14 @@ def gerar_laudo():
             import traceback
             traceback.print_exc()
 
-        filename = os.path.basename(output_path)
-        is_pdf = filename.endswith('.pdf')
+        # Clean up temp dir immediately
+        shutil.rmtree(temp_dir, ignore_errors=True)
         
-        mime_type = 'application/pdf' if is_pdf else 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        download_name = f'Laudo_{laudo_id.replace("/", "_")}.{"pdf" if is_pdf else "docx"}'
-        
-        response = send_file(
-            output_path,
-            mimetype=mime_type,
-            as_attachment=True,
-            download_name=download_name
-        )
-        
-        @response.call_on_close
-        def cleanup():
-            shutil.rmtree(temp_dir, ignore_errors=True)
-        
-        return response
+        return jsonify({
+            'success': True,
+            'filename': persistent_filename,
+            'is_pdf': is_pdf
+        })
     
     except Exception as e:
         import traceback
@@ -597,7 +592,7 @@ def delete_laudo(id):
     return jsonify({'success': True})
 
 @app.route('/api/laudos/<int:id>/toggle-test', methods=['POST'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def toggle_test(id):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -642,12 +637,14 @@ def get_incidence_report():
     })
 
 @app.route('/api/view-pdf/<path:filename>')
-@role_required(['master', 'suporte', 'viewer'])
+@role_required(['master', 'suporte', 'viewer', 'admin'])
 def view_pdf(filename):
+    down = request.args.get('download', '0') == '1'
     # 1. Primary storage check
     pdf_path = os.path.join(PDF_STORAGE, filename)
     if os.path.exists(pdf_path):
-        return send_file(pdf_path, mimetype='application/pdf')
+        mime_type = 'application/pdf' if filename.lower().endswith('.pdf') else 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        return send_file(pdf_path, mimetype=mime_type, as_attachment=down)
     
     # 2. Legacy fallback for imported records (IMP-XXX)
     # Expected filename from frontend: Laudo_IMP-035_2025.pdf
@@ -736,7 +733,7 @@ def get_options():
     return jsonify({'success': True, 'data': options})
 
 @app.route('/api/options', methods=['POST'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def add_option():
     data = request.get_json()
     category = data.get('category')
@@ -757,7 +754,7 @@ def add_option():
     return jsonify({'success': True, 'id': new_id})
 
 @app.route('/api/options/<int:id>', methods=['DELETE'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def delete_option(id):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -767,7 +764,7 @@ def delete_option(id):
     return jsonify({'success': True})
 
 @app.route('/api/options/<int:id>', methods=['PUT'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def update_option(id):
     data = request.get_json()
     value = data.get('value')
@@ -797,7 +794,7 @@ def get_settings():
     return jsonify({'success': True, 'data': settings})
 
 @app.route('/api/settings', methods=['POST'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def update_setting():
     data = request.get_json()
     key = data.get('key')

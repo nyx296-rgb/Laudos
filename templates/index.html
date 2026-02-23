@@ -30,14 +30,14 @@
           <div class="field login-field">
             <label>Usuário</label>
             <div class="input-with-icon no-icon">
-              <input type="text" id="globalUsername" placeholder="Digite seu usuário" autocomplete="username" />
+              <input type="text" id="globalUsername" placeholder="Digite seu usuário" autocomplete="username" onkeydown="if(event.key === 'Enter') handleGlobalLogin()" />
             </div>
           </div>
 
           <div class="field login-field">
             <label>Senha</label>
             <div class="input-with-icon no-icon">
-              <input type="password" id="globalPassword" placeholder="••••••••" autocomplete="current-password" />
+              <input type="password" id="globalPassword" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key === 'Enter') handleGlobalLogin()" />
             </div>
           </div>
 
@@ -632,6 +632,20 @@
             <button class="pdf-modal-close" onclick="closePdfModal()">✕ Fechar</button>
           </div>
           <iframe id="pdfModalFrame" class="pdf-modal-frame" src="" title="Visualizador de PDF"></iframe>
+        </div>
+      </div>
+
+      <!-- Post Generation Modal -->
+      <div id="postGenModal" class="pdf-modal-overlay hidden">
+        <div class="pdf-modal-content" style="max-width: 450px; height: auto; border-radius: 12px; text-align: center; padding: 30px;">
+          <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
+          <h2 style="color: var(--text-primary); margin-bottom: 15px;">Documento Gerado!</h2>
+          <p id="postGenMessage" style="color: var(--text-secondary); margin-bottom: 25px; line-height: 1.5;">O documento foi salvo com sucesso. O que deseja fazer agora?</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn-primary" id="btnPostGenVisualizar" style="width: 100%;">👁️ Visualizar Documento</button>
+            <button class="btn-primary" id="btnPostGenBaixar" style="width: 100%; background: #4caf50;">⬇️ Baixar Cópia</button>
+            <button class="btn-secondary" onclick="closePostGenModal()" style="width: 100%;">Nova Solicitação</button>
+          </div>
         </div>
       </div>
 
