@@ -8,7 +8,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v=3">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -30,14 +30,16 @@
           <div class="field login-field">
             <label>Usuário</label>
             <div class="input-with-icon no-icon">
-              <input type="text" id="globalUsername" placeholder="Digite seu usuário" autocomplete="username" onkeydown="if(event.key === 'Enter') handleGlobalLogin()" />
+              <input type="text" id="globalUsername" placeholder="Digite seu usuário" autocomplete="username"
+                onkeydown="if(event.key === 'Enter') handleGlobalLogin()" />
             </div>
           </div>
 
           <div class="field login-field">
             <label>Senha</label>
             <div class="input-with-icon no-icon">
-              <input type="password" id="globalPassword" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key === 'Enter') handleGlobalLogin()" />
+              <input type="password" id="globalPassword" placeholder="••••••••" autocomplete="current-password"
+                onkeydown="if(event.key === 'Enter') handleGlobalLogin()" />
             </div>
           </div>
 
@@ -88,7 +90,7 @@
         <div class="dashboard-content-full">
           <header class="dashboard-header">
             <div class="header-left">
-              <button class="btn-back" onclick="toggleDashboard()">← Voltar ao Gerador</button>
+              <button class="btn-back" id="btnBackDashboard" onclick="toggleDashboard()">← Voltar ao Gerador</button>
               <h2>📊 Painel Administrativo</h2>
             </div>
             <div class="dash-tabs">
@@ -195,294 +197,105 @@
       </div>
 
       <!-- ============================================================
-         CONFIGURATION PAGE (Full Page)
+         LEGACY ONLY PAGE (Viewer Dedicated)
          ============================================================ -->
-      <div id="configPage" class="dashboard-page hidden">
+      <div id="legacyOnlyPage" class="dashboard-page hidden">
         <div class="dashboard-content-full">
           <header class="dashboard-header">
             <div class="header-left">
-              <button class="btn-back" onclick="toggleConfig()">← Voltar ao Gerador</button>
-              <h2>⚙️ Configurações do Sistema</h2>
+              <button class="btn-back" onclick="toggleDashboard()">← Voltar ao Dashboard</button>
+              <h2>📂 Consultas de Laudos</h2>
+            </div>
+          </header>
+          <div class="stats-viewport">
+            <!-- Content tailored for Viewer -->
+            <div class="lists-header">
+              <h3>Laudos Históricos</h3>
+            </div>
+            <p class="report-desc" style="margin-bottom: 16px;">Pesquise e visualize PDFs de Laudos antigos.</p>
+            <div class="legacy-search-wrap" style="margin-bottom: 16px;">
+              <input type="text" id="legacyOnlySearch" placeholder="Filtrar por nome..."
+                oninput="filterLegacyOnlyList()" autocomplete="off">
+            </div>
+            <div id="legacyOnlyFileList" class="legacy-file-list" style="max-height: calc(100vh - 250px);">
+              <div class="legacy-loading">Carregando arquivos...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+         VIEWER DASHBOARD
+         ============================================================ -->
+      <div id="viewerDashboardPage" class="dashboard-page hidden">
+        <div class="dashboard-content-full">
+          <header class="dashboard-header">
+            <div class="header-left">
+              <h2>Painel de Consulta</h2>
+            </div>
+            <div class="dash-tabs">
+                <button class="tab-btn active" onclick="switchViewerTab('viewer-main')">Atividades Recentes</button>
+                <button class="tab-btn" onclick="switchViewerTab('viewer-legacy')">Laudos Antigos</button>
             </div>
             <button class="btn-secondary" onclick="handleLogout()" style="margin: 0">Sair</button>
           </header>
 
-          <!-- Config Login Gate -->
-          <div id="configLoginSection" class="login-section hidden">
-            <div class="login-card">
-              <div class="login-icon">🔐</div>
-              <h3>Acesso Restrito</h3>
-              <p>Faça login para acessar as configurações do sistema.</p>
-              <div class="field">
-                <input type="text" id="configUsername" placeholder="Usuário" />
+          <div id="viewerMain" class="stats-viewport">
+            <div class="dashboard-grid-layout">
+                <div class="stats-table-card">
+                  <h3>Atividades Recentes</h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Unidade</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="viewer_recent_laudos_body"></tbody>
+                  </table>
+                </div>
               </div>
-              <div class="field">
-                <input type="password" id="configPassword" placeholder="Senha" />
+            <h3>Consulta de Laudos e Solicitações</h3>
+            <div class="management-header">
+              <div class="search-box">
+                <input type="text" id="viewerSearch" placeholder="Pesquisar por ID, unidade, item ou descrição..." oninput="filterViewerTable()">
               </div>
-              <button class="btn-primary" onclick="handleConfigLogin()">Entrar no Sistema</button>
+              <div class="column-selector">
+                <span class="selector-label">Tipo:</span>
+                <select id="viewerTypeFilter" onchange="fetchViewerData()" style="padding: 4px; border-radius: 4px; border: 1px solid var(--border); font-size: 0.85rem;">
+                  <option value="">Todos</option>
+                  <option value="laudo">Laudos</option>
+                  <option value="compra">Compras</option>
+                </select>
+              </div>
+            </div>
+            <div class="management-table-card">
+              <div class="table-scroll">
+                <table id="viewerManagementTable">
+                  <thead>
+                    <tr id="viewer_management_thead_row">
+                      <!-- Dynamic columns -->
+                    </tr>
+                  </thead>
+                  <tbody id="viewer_management_table_body"></tbody>
+                </table>
+              </div>
             </div>
           </div>
-
-          <!-- Config Main Content -->
-          <div id="configMainSection" class="stats-viewport hidden">
-            <div class="tab-item-content">
-              <div class="lists-management-layout">
-
-                <!-- Sidebar -->
-                <div class="lists-sidebar">
-                  <div class="sidebar-group-label">Listas</div>
-                  <nav id="lists_categories_nav">
-                    <button class="list-cat-btn active" onclick="selectListCategory('unidades')">Unidades</button>
-                    <button class="list-cat-btn" onclick="selectListCategory('setores')">Setores</button>
-                    <button class="list-cat-btn" onclick="selectListCategory('locais')">Locais</button>
-                    <button class="list-cat-btn" onclick="selectListCategory('analistas')">Analistas</button>
-                    <button class="list-cat-btn" onclick="selectListCategory('cargos')">Cargos</button>
-                    <button class="list-cat-btn" onclick="selectListCategory('marcas')">Marcas</button>
-                    <button class="list-cat-btn" onclick="selectListCategory('modelos')">Modelos</button>
-                    <button class="list-cat-btn" onclick="selectListCategory('itens')">Equipamentos</button>
-                  </nav>
-                  <div class="sidebar-group-label">Gerenciamento</div>
-                  <nav>
-                    <button class="list-cat-btn" id="btnCatManage" onclick="showManageView()">Gerenciar Laudos</button>
-                    <button class="list-cat-btn" id="btnCatLegacy" onclick="showLegacyView()">Laudos Antigos</button>
-                  </nav>
-                  <div class="sidebar-group-label">Acesso</div>
-                  <nav>
-                    <button class="list-cat-btn" id="btnCatUsers" onclick="showUsersView()">Usuários</button>
-                    <button class="list-cat-btn" id="btnCatProfile" onclick="showProfileView()">Meu Perfil</button>
-                  </nav>
-                  <div class="sidebar-group-label">Sistema</div>
-                  <nav>
-                    <button class="list-cat-btn" id="btnCatBackup" onclick="showBackupSettings()">Backup em
-                      Rede</button>
-                  </nav>
-                </div>
-
-                <!-- Main Content Area -->
-                <div class="lists-main-content">
-
-                  <!-- List Items View -->
-                  <div id="listManagementView">
-                    <div class="lists-header">
-                      <h3 id="current_list_title">Gerenciar: Unidades</h3>
-                      <div class="add-item-box">
-                        <input type="text" id="newListEntry" placeholder="Novo item...">
-                        <button class="btn-primary" onclick="addNewListItem()" style="width: auto; padding: 8px 16px;">+
-                          Adicionar</button>
-                      </div>
-                    </div>
-                    <div class="items-grid-container">
-                      <ul id="items_dynamic_list" class="dynamic-items-list">
-                        <!-- Items injected by JS -->
-                      </ul>
-                    </div>
-                  </div>
-
-                  <!-- Gerenciar Laudos View -->
-                  <div id="manageLaudosView" class="hidden">
-                    <div class="lists-header">
-                      <h3>📊 Gerenciar Laudos</h3>
-                    </div>
-                    <div class="management-header">
-                      <div class="search-box">
-                        <input type="text" id="manageSearch"
-                          placeholder="Pesquisar por ID, unidade, item ou descrição..."
-                          oninput="filterManagementTable()">
-                      </div>
-                      <div class="column-selector">
-                        <span class="selector-label">Tipo:</span>
-                        <select id="manageTypeFilter" onchange="fetchManagementData()"
-                          style="padding: 4px; border-radius: 4px; border: 1px solid var(--border); font-size: 0.85rem;">
-                          <option value="">Todos</option>
-                          <option value="laudo">Laudos</option>
-                          <option value="compra">Compras</option>
-                        </select>
-                        <span class="selector-label" style="margin-left: 10px;">Colunas:</span>
-                        <div class="checkbox-group">
-                          <label><input type="checkbox" checked onchange="toggleColumn('data')"> Data</label>
-                          <label><input type="checkbox" checked onchange="toggleColumn('tipo')"> Tipo</label>
-                          <label><input type="checkbox" checked onchange="toggleColumn('unidade')"> Unidade</label>
-                          <label><input type="checkbox" checked onchange="toggleColumn('item_defeito')"> Item</label>
-                          <label><input type="checkbox" onchange="toggleColumn('descricao_problema')"> Descrição</label>
-                          <label><input type="checkbox" onchange="toggleColumn('nome_analista')"> Analista</label>
-                          <label><input type="checkbox" onchange="toggleColumn('situacao')"> Situação</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="management-table-card">
-                      <div class="table-scroll">
-                        <table id="mainManagementTable">
-                          <thead>
-                            <tr id="management_thead_row">
-                              <!-- Dynamic columns -->
-                            </tr>
-                          </thead>
-                          <tbody id="management_table_body"></tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Laudos Antigos View -->
-                  <div id="legacyPdfsView" class="hidden">
-                    <div class="lists-header">
-                      <h3>📂 Laudos Históricos</h3>
-                    </div>
-                    <p class="report-desc" style="margin-bottom: 16px;">PDFs da pasta <strong>Laudos antigos</strong>.
-                      Visualize ou exclua permanentemente do disco.</p>
-                    <div class="legacy-search-wrap" style="margin-bottom: 16px;">
-                      <input type="text" id="legacySearch" placeholder="Filtrar por nome..."
-                        oninput="filterLegacyList()" autocomplete="off">
-                    </div>
-                    <div id="legacyFileList" class="legacy-file-list">
-                      <div class="legacy-loading">Carregando arquivos...</div>
-                    </div>
-                  </div>
-
-                  <!-- Backup Settings View -->
-                  <div id="backupSettingsView" class="hidden">
-                    <div class="lists-header">
-                      <h3>📁 Configurações de Backup em Rede</h3>
-                    </div>
-                    <div class="settings-backup-box"
-                      style="margin-top: 10px; padding: 20px; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border);">
-                      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
-                        Configure o caminho UNC (ex: //SERVIDOR/Laudos) para salvar uma cópia automática dos PDFs
-                        gerados.
-                      </p>
-                      <div class="field" style="display: flex; gap: 10px;">
-                        <input type="text" id="networkPathInput" placeholder="Ex: //SERVIDOR/Laudos" style="flex: 1;">
-                        <button class="btn-primary" onclick="saveNetworkPath()"
-                          style="width: auto; padding: 10px 20px;">Salvar Caminho</button>
-                      </div>
-                      <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);">
-                        <p style="font-size: 0.8rem; color: var(--text-label);">
-                          💡 <strong>Dica:</strong> Certifique-se de que o servidor onde o App está rodando tem
-                          permissão
-                          de escrita nesta pasta.
-                        </p>
-                      </div>
-                    </div> <!-- /settings-backup-box -->
-                  </div> <!-- /backupSettingsView -->
-
-                  <!-- User Management View -->
-                  <div id="usersManagementView" class="hidden">
-                    <div class="view-header-premium">
-                      <div class="view-header-left">
-                        <h3>👥 Gestão de Usuários</h3>
-                        <p class="view-subtitle">Controle de acessos e permissões do sistema</p>
-                      </div>
-                      <button class="btn-primary btn-add-user" onclick="showAddUserModal()">
-                        <span class="plus-icon">+</span> Novo Usuário
-                      </button>
-                    </div>
-
-                    <div class="management-card-premium">
-                      <div class="table-scroll">
-                        <table class="premium-table">
-                          <thead>
-                            <tr>
-                              <th>Usuário / Identificação</th>
-                              <th>Nome Completo</th>
-                              <th>Perfil de Acesso</th>
-                              <th>Status</th>
-                              <th style="text-align: right;">Ações</th>
-                            </tr>
-                          </thead>
-                          <tbody id="users_table_body"></tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Profile Update View -->
-                  <div id="profileUpdateView" class="hidden">
-                    <div class="profile-card-premium">
-                      <div class="profile-card-header">
-                        <div class="profile-avatar-circle">👤</div>
-                        <div class="profile-header-text">
-                          <h3>Meu Perfil</h3>
-                          <p>Gerencie suas informações e credenciais</p>
-                        </div>
-                      </div>
-
-                      <div class="profile-card-body">
-                        <div class="field">
-                          <label>Nome de Exibição</label>
-                          <div class="input-with-icon no-icon">
-                            <input type="text" id="profileFullName" placeholder="Seu nome completo">
-                          </div>
-                        </div>
-
-                        <div class="grid grid-2" style="gap: 16px;">
-                          <div class="field">
-                            <label>Nova Senha</label>
-                            <div class="input-with-icon no-icon">
-                              <input type="password" id="profilePassword" placeholder="******">
-                            </div>
-                            <small class="field-hint">Deixe em branco para não alterar</small>
-                          </div>
-
-                          <div class="field">
-                            <label>Confirmar Senha</label>
-                            <div class="input-with-icon no-icon">
-                              <input type="password" id="profileConfirmPassword" placeholder="******">
-                            </div>
-                          </div>
-                        </div>
-
-                        <div class="profile-actions">
-                          <button class="btn-primary" onclick="handleProfileUpdate()">
-                            Salvar Alterações
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- User Modal -->
-                  <div id="userModal" class="pdf-modal-overlay hidden">
-                    <div class="pdf-modal-content" style="max-width: 400px; height: auto;">
-                      <div class="pdf-modal-header">
-                        <span id="userModalTitle" class="pdf-modal-title">Novo Usuário</span>
-                        <button class="pdf-modal-close" onclick="hideUserModal()">✕</button>
-                      </div>
-                      <div style="padding: 20px;">
-                        <input type="hidden" id="modalUserId">
-                        <div class="field">
-                          <label>Nome de Usuário</label>
-                          <input type="text" id="modalUsername">
-                        </div>
-                        <div id="modalPasswordGroup" class="field">
-                          <label>Senha</label>
-                          <input type="password" id="modalPassword">
-                        </div>
-                        <div class="field">
-                          <label>Nome Completo</label>
-                          <input type="text" id="modalFullName">
-                        </div>
-                        <div class="field">
-                          <label>Perfil</label>
-                          <select id="modalRole">
-                            <option value="master">Master (Controle Total)</option>
-                            <option value="suporte">Suporte (Gera e consulta)</option>
-                            <option value="viewer">Viewer (Consulta somente)</option>
-                          </select>
-                        </div>
-                        <div class="field" id="modalActiveGroup">
-                          <label><input type="checkbox" id="modalIsActive" checked> Usuário Ativo</label>
-                        </div>
-                        <button class="btn-primary" onclick="saveUserModal()" style="margin-top: 15px;">Salvar
-                          Usuário</button>
-                      </div>
-                    </div>
-                  </div>
-
-                </div><!-- /lists-main-content -->
-              </div><!-- /lists-management-layout -->
-            </div>
-          </div><!-- /configMainSection -->
-
+          <div id="viewerLegacy" class="stats-viewport hidden">
+             <div class="lists-header">
+                <h3>Laudos Históricos</h3>
+              </div>
+              <p class="report-desc" style="margin-bottom: 16px;">Pesquise e visualize PDFs de Laudos antigos.</p>
+              <div class="legacy-search-wrap" style="margin-bottom: 16px;">
+                <input type="text" id="viewerLegacySearch" placeholder="Filtrar por nome..." oninput="filterViewerLegacyList()" autocomplete="off">
+              </div>
+              <div id="viewerLegacyFileList" class="legacy-file-list" style="max-height: calc(100vh - 250px);">
+                <div class="legacy-loading">Carregando arquivos...</div>
+              </div>
+          </div>
         </div>
       </div>
 
@@ -564,6 +377,10 @@
             <textarea id="descricao_problema"
               placeholder="Descreva detalhadamente o problema técnico identificado..."></textarea>
           </div>
+          <div class="field">
+            <label for="chamado">Número do Chamado</label>
+            <input type="text" id="chamado" placeholder="Ex: CHD-2026-001234" autocomplete="off" />
+          </div>
         </section>
 
         <!-- Section 2: Equipment List -->
@@ -637,13 +454,16 @@
 
       <!-- Post Generation Modal -->
       <div id="postGenModal" class="pdf-modal-overlay hidden">
-        <div class="pdf-modal-content" style="max-width: 450px; height: auto; border-radius: 12px; text-align: center; padding: 30px;">
+        <div class="pdf-modal-content"
+          style="max-width: 450px; height: auto; border-radius: 12px; text-align: center; padding: 30px;">
           <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
           <h2 style="color: var(--text-primary); margin-bottom: 15px;">Documento Gerado!</h2>
-          <p id="postGenMessage" style="color: var(--text-secondary); margin-bottom: 25px; line-height: 1.5;">O documento foi salvo com sucesso. O que deseja fazer agora?</p>
+          <p id="postGenMessage" style="color: var(--text-secondary); margin-bottom: 25px; line-height: 1.5;">O
+            documento foi salvo com sucesso. O que deseja fazer agora?</p>
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <button class="btn-primary" id="btnPostGenVisualizar" style="width: 100%;">👁️ Visualizar Documento</button>
-            <button class="btn-primary" id="btnPostGenBaixar" style="width: 100%; background: #4caf50;">⬇️ Baixar Cópia</button>
+            <button class="btn-primary" id="btnPostGenBaixar" style="width: 100%; background: #4caf50;">⬇️ Baixar
+              Cópia</button>
             <button class="btn-secondary" onclick="closePostGenModal()" style="width: 100%;">Nova Solicitação</button>
           </div>
         </div>
@@ -660,11 +480,32 @@
       <div id="toast" class="toast hidden"></div>
 
     </div> <!-- Closing page-wrapper -->
+
+    <!-- Password Reset Modal -->
+    <div id="passwordResetModal" class="pdf-modal-overlay hidden">
+        <div class="pdf-modal-content" style="max-width: 400px; height: auto;">
+            <div class="pdf-modal-header">
+                <span class="pdf-modal-title">Redefinir Senha</span>
+            </div>
+            <div style="padding: 20px;">
+                <p>Este é seu primeiro acesso. Por favor, defina uma nova senha.</p>
+                <div class="field">
+                    <label>Nova Senha</label>
+                    <input type="password" id="resetPassword">
+                </div>
+                <div class="field">
+                    <label>Confirmar Nova Senha</label>
+                    <input type="password" id="resetConfirmPassword">
+                </div>
+                <button class="btn-primary" onclick="handlePasswordReset()" style="margin-top: 15px;">Salvar Senha</button>
+            </div>
+        </div>
+    </div>
   </div> <!-- Closing appContent -->
 
   <!-- Scripts -->
-  <script src="/static/data_options.js"></script>
-  <script src="/static/app.js"></script>
+    <script src="/static/data_options.js?v=13"></script>
+    <script src="/static/app.js?v=13"></script>
 </body>
 
 </html>

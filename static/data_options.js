@@ -1,8 +1,10 @@
 /**
  * Default options extracted from historical data and Google Forms.
  * These can be expanded by the user and saved in localStorage.
+ * Guard against multiple loads by only defining when undefined.
  */
-const DEFAULT_DATA_OPTIONS = {
+if (typeof DEFAULT_DATA_OPTIONS === 'undefined') {
+    var DEFAULT_DATA_OPTIONS = {
     unidades: [
         "Operadora", "CG24h", "CG Ambulatório", "Centro Pediátrico",
         "Medicina Preventiva", "WorkMed", "Centro Médico Bangu",
@@ -53,17 +55,21 @@ const DEFAULT_DATA_OPTIONS = {
         "Técnico Responsável",
         "Coordenador de Infraestrutura"
     ]
-};
+    };
+}
 
 /**
  * Loads options from the backend or falls back to defaults.
  */
 async function loadDataOptions() {
     try {
+        console.log('[DEBUG data_options.js] Starting loadDataOptions()');
         const res = await fetch('/api/options');
         const json = await res.json();
+        console.log('[DEBUG data_options.js] API response:', json);
 
-        if (json.success && json.data.length > 0) {
+        if (json.success && json.data && json.data.length > 0) {
+            console.log('[DEBUG data_options.js] API returned', json.data.length, 'items');
             // Reconstruct the structure expected by the app
             const options = {
                 unidades: [], setores: [], locais: [], analistas: [],
@@ -83,11 +89,15 @@ async function loadDataOptions() {
                 }
             });
 
+            console.log('[DEBUG data_options.js] Returning options object:', options);
             return options;
+        } else {
+            console.warn('[DEBUG data_options.js] API returned no data or success=false, using defaults');
         }
     } catch (e) {
-        console.error("Error loading options from backend:", e);
+        console.error("[ERROR data_options.js] Error loading options from backend:", e);
     }
+    console.log('[DEBUG data_options.js] Returning DEFAULT_DATA_OPTIONS:', DEFAULT_DATA_OPTIONS);
     return { ...DEFAULT_DATA_OPTIONS };
 }
 
