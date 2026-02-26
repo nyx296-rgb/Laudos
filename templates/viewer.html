@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Visualização</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=3">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Global Login Overlay -->
+    <div id="globalLoginSection" class="login-overlay hidden">
+        <div class="login-glass-container">
+            <div class="login-left-panel">
+                <img src="/static/img/logo_cemeru.png" class="login-logo-img">
+                <h2>Sistema de Laudos</h2>
+                <p>Gerenciamento Técnico e Solicitações</p>
+            </div>
+            <div class="login-right-panel">
+                <div class="login-form-box">
+                    <h3>Bem-vindo</h3>
+                    <p class="login-hint">Identifique-se para continuar</p>
+
+                    <div class="field login-field">
+                        <label>Usuário</label>
+                        <div class="input-with-icon no-icon">
+                            <input type="text" id="globalUsername" placeholder="Digite seu usuário"
+                                autocomplete="username" onkeydown="if(event.key === 'Enter') handleGlobalLogin()" />
+                        </div>
+                    </div>
+
+                    <div class="field login-field">
+                        <label>Senha</label>
+                        <div class="input-with-icon no-icon">
+                            <input type="password" id="globalPassword" placeholder="••••••••"
+                                autocomplete="current-password"
+                                onkeydown="if(event.key === 'Enter') handleGlobalLogin()" />
+                        </div>
+                    </div>
+
+                    <button class="btn-login-submit" onclick="handleGlobalLogin()">
+                        Acessar Sistema
+                    </button>
+
+                    <div id="loginErrorMsg" class="login-error hidden">Usuário ou senha inválidos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="appContent" class="hidden">
+        <div class="page-wrapper">
+            <!-- HEADER -->
+            <header class="app-header">
+                <div class="header-inner">
+                    <div class="logo-area">
+                        <img src="/static/img/logo_cemeru.png" class="header-logo-img">
+                        <div>
+                            <h1 class="app-title">Painel de Visualização</h1>
+                        </div>
+                    </div>
+
+                    <div class="header-user-area">
+                        <div id="userBadge" class="user-badge-header">
+                            <span id="userNameDisplay">Usuário</span>
+                            <span id="userRoleDisplay" class="badge-role">cargo</span>
+                        </div>
+                        <button class="btn-logout" onclick="handleLogout()" title="Sair">Sair</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- VIEWER DASHBOARD -->
+            <div id="viewerDashboardPage" class="dashboard-page">
+                <div class="dashboard-content-full">
+                    <header class="dashboard-header">
+                        <div class="header-left">
+                            <h2>Painel de Consulta</h2>
+                        </div>
+                        <div class="dash-tabs">
+                            <button class="tab-btn active" onclick="switchViewerTab('viewer-main')">Atividades
+                                Recentes</button>
+                            <button class="tab-btn" onclick="switchViewerTab('viewer-legacy')">Laudos Antigos</button>
+                        </div>
+                        <button class="btn-secondary" onclick="handleLogout()" style="margin: 0">Sair</button>
+                    </header>
+
+                    <div id="viewerMain" class="stats-viewport">
+                        <div class="dashboard-grid-layout">
+                            <div class="chart-card">
+                                <h3>Unidades com Mais Atendimentos</h3>
+                                <div class="chart-container">
+                                    <canvas id="viewerChartUnidade"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Equipamentos com Mais Incidências</h3>
+                                <div class="chart-container">
+                                    <canvas id="viewerChartEquipamentos"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <h3>Consulta de Laudos e Solicitações</h3>
+                        <div class="management-header">
+                            <div class="search-box">
+                                <input type="text" id="viewerSearch"
+                                    placeholder="Pesquisar por ID, unidade, item ou descrição..."
+                                    oninput="filterViewerTable()">
+                            </div>
+                            <div class="column-selector">
+                                <span class="selector-label">Tipo:</span>
+                                <select id="viewerTypeFilter" onchange="fetchViewerData()"
+                                    style="padding: 4px; border-radius: 4px; border: 1px solid var(--border); font-size: 0.85rem;">
+                                    <option value="">Todos</option>
+                                    <option value="laudo">Laudos</option>
+                                    <option value="compra">Compras</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="management-table-card">
+                            <div class="table-scroll">
+                                <table id="viewerManagementTable">
+                                    <thead>
+                                        <tr id="viewer_management_thead_row">
+                                            <th>ID</th>
+                                            <th>Data</th>
+                                            <th>Tipo</th>
+                                            <th>Unidade</th>
+                                            <th>Equipamento</th>
+                                            <th>Descrição</th>
+                                            <th>Analista</th>
+                                            <th>Situação</th>
+                                            <th style="text-align: right;">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="viewer_management_table_body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="viewerLegacy" class="stats-viewport hidden">
+                        <div class="lists-header">
+                            <h3>Laudos Históricos</h3>
+                        </div>
+                        <p class="report-desc" style="margin-bottom: 16px;">Pesquise e visualize PDFs de Laudos
+                            antigos.</p>
+                        <div class="legacy-search-wrap" style="margin-bottom: 16px;">
+                            <input type="text" id="viewerLegacySearch" placeholder="Filtrar por nome..."
+                                oninput="filterViewerLegacyList()" autocomplete="off">
+                        </div>
+                        <div id="viewerLegacyFileList" class="legacy-file-list"
+                            style="max-height: calc(100vh - 250px);">
+                            <div class="legacy-loading">Carregando arquivos...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Reset Modal -->
+        <div id="passwordResetModal" class="pdf-modal-overlay hidden">
+            <div class="pdf-modal-content" style="max-width: 400px; height: auto;">
+                <div class="pdf-modal-header">
+                    <span class="pdf-modal-title">Redefinir Senha</span>
+                </div>
+                <div style="padding: 20px;">
+                    <p>Este é seu primeiro acesso. Por favor, defina uma nova senha.</p>
+                    <div class="field">
+                        <label>Nova Senha</label>
+                        <input type="password" id="resetPassword">
+                    </div>
+                    <div class="field">
+                        <label>Confirmar Nova Senha</label>
+                        <input type="password" id="resetConfirmPassword">
+                    </div>
+                    <button class="btn-primary" onclick="handlePasswordReset()" style="margin-top: 15px;">Salvar
+                        Senha</button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- Closing appContent -->
+
+    <!-- Scripts -->
+    <script src="/static/viewer.js?v=4"></script>
+</body>
+
+</html>

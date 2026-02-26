@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações - Gerador de Laudos</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=6">
+  <style>
+    .config-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 40px 20px;
+      margin: -20px -20px 30px -20px;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .config-btn {
+      padding: 14px 12px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      text-align: center;
+      color: var(--text-primary);
+    }
+
+    .config-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .config-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      margin: 20px 0 12px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .view {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: var(--bg-surface);
+      transition: all 0.2s;
+    }
+
+    .list-item:hover {
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .list-item-text {
+      flex: 1;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .list-item-btn {
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .list-item-btn:hover {
+      background: #cc0000;
+      transform: scale(1.05);
+    }
+
+    .add-item-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .add-item-form input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    .add-item-form input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    .add-item-form button {
+      padding: 10px 24px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .add-item-form button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .form-field {
+      margin-bottom: 15px;
+    }
+
+    .form-field label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .form-field input,
+    .form-field select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-field input:focus,
+    .form-field select:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .checkbox-field input[type="checkbox"] {
+      width: auto;
+      cursor: pointer;
+    }
+
+    .checkbox-field label {
+      margin: 0;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .back-btn {
+      background: var(--text-secondary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: var(--text-primary);
+    }
+
+    .status-message {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .status-message.success {
+      background: #e3f2fd;
+      color: #1976d2;
+      border-left: 4px solid #1976d2;
+      display: block;
+    }
+
+    .loading-spinner {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="logo-area">
+          <img src="/static/img/logo_cemeru.png" class="header-logo-img">
+          <div>
+            <h1 class="app-title">Gerador de Laudos Técnicos</h1>
+          </div>
+        </div>
+        <div class="header-nav">
+          <button class="btn-nav" onclick="window.location.href='/'">Laudos</button>
+          <button class="btn-nav" onclick="window.location.href='/'">Solicitação</button>
+          <button class="btn-nav" onclick="window.location.href='/'">Dashboard</button>
+          <button class="btn-nav active">Configurações</button>
+        </div>
+        <div class="header-user-area">
+          <div id="userBadge" class="user-badge-header">
+            <span id="userNameDisplay">Usuário</span>
+            <span id="userRoleDisplay" class="badge-role">cargo</span>
+          </div>
+          <button class="btn-logout" onclick="handleLogout()" title="Sair">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content" id="configContent">
+      <!-- Menu Principal -->
+      <section class="card" id="menuView">
+        <div class="config-header">
+          <h2 style="margin: 0; font-size: 1.8rem;">⚙️ Configurações do Sistema</h2>
+          <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 0.95rem;">Personalize dados, usuários e backups</p>
+        </div>
+
+        <!-- Gerenciamento de Laudos -->
+        <div class="section-label">📄 Gerenciamento de Laudos</div>
+        <div class="config-grid">
+          <button class="config-btn" onclick="switchView('manage')">Gerenciar Laudos</button>
+          <button class="config-btn" onclick="switchView('legacy')">Laudos Históricos</button>
+        </div>
+
+        <!-- Dados do Sistema -->
+        <div class="section-label">📋 Dados do Sistema</div>
+        <div class="config-grid">
+          <button class="config-btn" onclick="switchView('list', 'unidades')">Unidades</button>
+          <button class="config-btn" onclick="switchView('list', 'setores')">Setores</button>
+          <button class="config-btn" onclick="switchView('list', 'locais')">Locais</button>
+          <button class="config-btn" onclick="switchView('list', 'analistas')">Analistas</button>
+          <button class="config-btn" onclick="switchView('list', 'cargos')">Cargos</button>
+          <button class="config-btn" onclick="switchView('list', 'marcas')">Marcas</button>
+          <button class="config-btn" onclick="switchView('list', 'modelos')">Modelos</button>
+          <button class="config-btn" onclick="switchView('list', 'itens')">Equipamentos</button>
+        </div>
+
+        <!-- Administração -->
+        <div class="section-label" id="adminLabel" style="display:none;">⚙️ Administração do Sistema</div>
+        <div class="config-grid" id="adminGrid" style="display:none;">
+          <button class="config-btn" onclick="switchView('backup')">Backup em Rede</button>
+          <button class="config-btn" onclick="switchView('users')">Gestão de Usuários</button>
+          <button class="config-btn" onclick="switchView('profile')">Meu Perfil</button>
+        </div>
+      </section>
+
+      <!-- View: Gerenciar Laudos -->
+      <section class="card view" id="manageView">
+        <button class="back-btn" onclick="switchView('menu')">← Voltar ao Menu</button>
+        <h2 class="card-title">Gerenciar Laudos</h2>
+        <div id="manageLaudosContent" style="min-height: 200px;">
+          <div class="loading-spinner"><div class="spinner"></div> Carregando...</div>
+        </div>
+      </section>
+
+      <!-- View: Laudos Históricos -->
+      <section class="card view" id="legacyView">
+        <button class="back-btn" onclick="switchView('menu')">← Voltar ao Menu</button>
+        <h2 class="card-title">Laudos Históricos</h2>
+        <div id="legacyContent" style="min-height: 200px;">
+          <div class="loading-spinner"><div class="spinner"></div> Carregando...</div>
+        </div>
+      </section>
+
+      <!-- View: Lista de Dados -->
+      <section class="card view" id="listView">
+        <button class="back-btn" onclick="switchView('menu')">← Voltar ao Menu</button>
+        <h2 class="card-title" id="listTitle">Configurar</h2>
+        <div class="add-item-form">
+          <input type="text" id="newItemInput" placeholder="Digite um novo item...">
+          <button onclick="addItem()">+ Adicionar</button>
+        </div>
+        <div id="listStatus" class="status-message"></div>
+        <div id="listItems" style="min-height: 100px;">
+          <div class="loading-spinner"><div class="spinner"></div> Carregando items...</div>
+        </div>
+      </section>
+
+      <!-- View: Backup -->
+      <section class="card view" id="backupView">
+        <button class="back-btn" onclick="switchView('menu')">← Voltar ao Menu</button>
+        <h2 class="card-title">Backup em Rede</h2>
+        <div class="form-field">
+          <label>Caminho de Rede</label>
+          <input type="text" id="networkPathInput" placeholder="Ex: \\servidor\pasta">
+          <small style="color: var(--text-secondary); margin-top: 4px; display: block;">Caminho compartilhado de rede onde os backups serão salvos</small>
+        </div>
+        <button class="btn-primary" onclick="saveNetworkPath()" style="margin-bottom: 20px;">Salvar Caminho</button>
+        <div id="backupStatus" class="status-message"></div>
+        <div class="checkbox-field">
+          <input type="checkbox" id="autoBackupToggle" onchange="toggleAutoBackup()">
+          <label for="autoBackupToggle">Ativar Backup Automático às 20:00</label>
+        </div>
+        <div id="backupInfo" style="padding: 10px; background: var(--bg-surface); border-radius: 6px; color: var(--text-secondary);"></div>
+      </section>
+
+      <!-- View: Usuários -->
+      <section class="card view" id="usersView">
+        <button class="back-btn" onclick="switchView('menu')">← Voltar ao Menu</button>
+        <h2 class="card-title">Gestão de Usuários</h2>
+        <button class="btn-primary" onclick="showAddUserModal()" style="margin-bottom: 15px;">+ Novo Usuário</button>
+        <div id="usersContent" style="min-height: 200px;">
+          <div class="loading-spinner"><div class="spinner"></div> Carregando usuários...</div>
+        </div>
+      </section>
+
+      <!-- View: Perfil -->
+      <section class="card view" id="profileView">
+        <button class="back-btn" onclick="switchView('menu')">← Voltar ao Menu</button>
+        <h2 class="card-title">Meu Perfil</h2>
+        <div class="form-field">
+          <label>Nome Completo</label>
+          <input type="text" id="profileFullName" placeholder="Seu nome completo">
+        </div>
+        <div class="form-field">
+          <label>Nova Senha (deixe em branco para não alterar)</label>
+          <input type="password" id="profilePassword" placeholder="Nova senha">
+        </div>
+        <div class="form-field">
+          <label>Confirmar Senha</label>
+          <input type="password" id="profileConfirmPassword" placeholder="Confirme a nova senha">
+        </div>
+        <button class="btn-primary" onclick="saveProfile()">Salvar Alterações</button>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/static/data_options.js?v=9"></script>
+  <script src="/static/app.js?v=9"></script>
+  <script>
+    let currentListCategory = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const authed = await checkServerAuth();
+        if (!authed) {
+          window.location.href = '/';
+          return;
+        }
+        updateUserDisplay();
+        applyRbacUI();
+        showAdminSectionIfNeeded();
+      } catch (err) {
+        console.error('Init error:', err);
+      }
+    });
+
+    function updateUserDisplay() {
+      const nameDisp = document.getElementById('userNameDisplay');
+      const roleDisp = document.getElementById('userRoleDisplay');
+      if (nameDisp) nameDisp.textContent = currentUser.fullName || currentUser.username || 'Usuário';
+      if (roleDisp) roleDisp.textContent = currentUser.role || '';
+    }
+
+    function showAdminSectionIfNeeded() {
+      const isAdmin = currentUser.role === 'admin' || currentUser.role === 'master';
+      const adminLabel = document.getElementById('adminLabel');
+      const adminGrid = document.getElementById('adminGrid');
+      if (adminLabel && adminGrid) {
+        adminLabel.style.display = isAdmin ? 'block' : 'none';
+        adminGrid.style.display = isAdmin ? 'grid' : 'none';
+      }
+    }
+
+    function switchView(view, category) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('menuView').style.display = 'none';
+      
+      switch(view) {
+        case 'menu':
+          document.getElementById('menuView').style.display = 'block';
+          break;
+        case 'manage':
+          document.getElementById('manageView').classList.add('active');
+          if (typeof fetchManagementData === 'function') fetchManagementData();
+          break;
+        case 'legacy':
+          document.getElementById('legacyView').classList.add('active');
+          if (typeof fetchLegacyPdfs === 'function') fetchLegacyPdfs();
+          break;
+        case 'backup':
+          document.getElementById('backupView').classList.add('active');
+          loadBackupUI();
+          break;
+        case 'users':
+          document.getElementById('usersView').classList.add('active');
+          if (typeof fetchUsers === 'function') fetchUsers();
+          break;
+        case 'profile':
+          document.getElementById('profileView').classList.add('active');
+          loadProfileUI();
+          break;
+        case 'list':
+          currentListCategory = category;
+          document.getElementById('listView').classList.add('active');
+          const categoryNames = { 'unidades': 'Unidades', 'setores': 'Setores', 'locais': 'Locais',
+            'analistas': 'Analistas', 'cargos': 'Cargos', 'marcas': 'Marcas', 'modelos': 'Modelos', 'itens': 'Equipamentos' };
+          document.getElementById('listTitle').textContent = 'Configurar: ' + (categoryNames[category] || category);
+          loadListItems();
+          break;
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function loadListItems() {
+      try {
+        console.log('[DEBUG] Starting loadListItems(), currentListCategory:', currentListCategory);
+        const data = await loadDataOptions();
+        console.log('[DEBUG] loadDataOptions returned:', data);
+        const items = data[currentListCategory] || [];
+        console.log('[DEBUG] Items for category', currentListCategory, ':', items);
+        const listEl = document.getElementById('listItems');
+        console.log('[DEBUG] listEl element:', listEl);
+        
+        if (!listEl) {
+          console.error('[ERROR] listItems element not found!');
+          showToast('Erro: elemento de lista não encontrado', 'error');
+          return;
+        }
+        
+        if (!items || items.length === 0) {
+          console.log('[DEBUG] No items found, showing empty message');
+          listEl.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Nenhum item adicionado ainda</p>';
+          return;
+        }
+        
+        console.log('[DEBUG] Rendering', items.length, 'items');
+        listEl.innerHTML = items.map(item => {
+          const displayText = typeof item === 'string' ? item : (item.nome || item);
+          const deleteValue = typeof item === 'string' ? item : item.nome;
+          console.log('[DEBUG] Item:', item, '-> displayText:', displayText);
+          return `
+          <div class="list-item">
+            <span class="list-item-text">${displayText}</span>
+            <button class="list-item-btn" onclick="deleteItem('${deleteValue.replace(/'/g, "\\'")}')">Remover</button>
+          </div>
+        `;
+        }).join('');
+        console.log('[DEBUG] Items rendered successfully');
+      } catch (err) {
+        console.error('[ERROR] Error loading items:', err);
+        showToast('Erro ao carregar items', 'error');
+      }
+    }
+
+    async function addItem() {
+      const input = document.getElementById('newItemInput');
+      const value = input.value.trim();
+      if (!value) {
+        showToast('Digite um item', 'error');
+        return;
+      }
+      try {
+        const res = await fetch('/api/options', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category: currentListCategory, value: value })
+        });
+        const data = await res.json();
+        if (data.success) {
+          input.value = '';
+          showToast('Item adicionado', 'success');
+          loadListItems();
+        }
+      } catch (err) {
+        console.error('Error adding item:', err);
+        showToast('Erro ao adicionar item', 'error');
+      }
+    }
+
+    async function deleteItem(item) {
+      if (!confirm('Remover este item?')) return;
+      try {
+        const res = await fetch('/api/options', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category: currentListCategory, value: item })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Item removido', 'success');
+          loadListItems();
+        }
+      } catch (err) {
+        console.error('Error deleting item:', err);
+        showToast('Erro ao remover item', 'error');
+      }
+    }
+
+    async function loadBackupUI() {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data.success && data.data) {
+          document.getElementById('networkPathInput').value = data.data.network_path || '';
+        }
+        const schedRes = await fetch('/api/backup-schedule');
+        const schedData = await schedRes.json();
+        if (schedData.success) {
+          document.getElementById('autoBackupToggle').checked = schedData.enabled;
+          document.getElementById('backupInfo').textContent = schedData.enabled ? '✓ Backup automático ATIVO' : 'Backup automático desativado';
+        }
+      } catch (err) {
+        console.error('Error loading backup UI:', err);
+      }
+    }
+
+    async function saveNetworkPath() {
+      const path = document.getElementById('networkPathInput').value;
+      if (!path) {
+        showToast('Digite um caminho', 'error');
+        return;
+      }
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ network_path: path })
+        });
+        const data = await res.json();
+        if (data.success) showToast('Caminho salvo com sucesso', 'success');
+      } catch (err) {
+        showToast('Erro ao salvar caminho', 'error');
+      }
+    }
+
+    async function toggleAutoBackup() {
+      const enabled = document.getElementById('autoBackupToggle').checked;
+      try {
+        const res = await fetch('/api/backup-schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: enabled })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message || 'Backup atualizado', 'success');
+          loadBackupUI();
+        }
+      } catch (err) {
+        showToast('Erro ao atualizar backup', 'error');
+      }
+    }
+
+    function loadProfileUI() {
+      document.getElementById('profileFullName').value = currentUser.fullName || '';
+      document.getElementById('profilePassword').value = '';
+      document.getElementById('profileConfirmPassword').value = '';
+    }
+
+    async function saveProfile() {
+      const fullName = document.getElementById('profileFullName').value;
+      const password = document.getElementById('profilePassword').value;
+      const confirmPassword = document.getElementById('profileConfirmPassword').value;
+      
+      if (password && password !== confirmPassword) {
+        showToast('Senhas não conferem', 'error');
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name: fullName, password: password || null })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Perfil atualizado', 'success');
+          currentUser.fullName = fullName;
+          updateUserDisplay();
+        }
+      } catch (err) {
+        showToast('Erro ao salvar perfil', 'error');
+      }
+    }
+
+    function handleLogout() {
+      fetch('/api/logout', { method: 'POST' }).then(() => {
+        window.location.href = '/';
+      }).catch(err => console.error('Logout error:', err));
+    }
+
+    function showToast(msg, type = '') {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.className = 'toast ' + type;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 4000);
+    }
+
+    function showAddUserModal() {
+      alert('Funcionalidade de adicionar usuário em desenvolvimento');
+    }
+  </script>
+</body>
+</html>

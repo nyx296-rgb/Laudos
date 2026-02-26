@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações - Gerador de Laudos</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=21">
+  <script src="/static/app.js?v=21" defer></script>
+  <style>
+    .config-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 0 250px 0;
+    }
+
+    .tabs-header {
+      display: flex;
+      gap: 0;
+      margin-bottom: 30px;
+      border-bottom: 2px solid var(--border);
+      overflow-x: hidden;
+      /* Prevent horizontal scroll */
+      scrollbar-width: none;
+    }
+
+    .tabs-header::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-btn {
+      padding: 14px 24px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.3s;
+      white-space: nowrap;
+      margin-bottom: -2px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(61, 142, 240, 0.05);
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(61, 142, 240, 0.1);
+      /* Subtle background instead of glow */
+    }
+
+    .tab-content {
+      display: none;
+      animation: slideIn 0.3s ease;
+      min-height: 400px;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .config-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .section-icon {
+      font-size: 1.8rem;
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .config-btn {
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      text-align: center;
+      color: var(--text-primary);
+    }
+
+    .config-btn:hover {
+      border-color: var(--accent);
+      background: rgba(61, 142, 240, 0.08);
+      transform: translateY(-2px);
+    }
+
+    /* Fix scrolling: ensure content is not cut off */
+    body {
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .config-container {
+      padding-bottom: 250px;
+      /* Space at end to ensure no content is cut off */
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(61, 142, 240, 0.15);
+    }
+
+    .form-group small {
+      display: block;
+      margin-top: 6px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .list-item:hover {
+      border-color: var(--accent);
+      background: rgba(61, 142, 240, 0.03);
+    }
+
+    .list-item-text {
+      font-weight: 500;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .list-item-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .edit-item-input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid var(--accent);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+
+    .edit-item-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(61, 142, 240, 0.15);
+    }
+
+    .add-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .add-form input {
+      flex: 1;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    .add-form button {
+      padding: 12px 24px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .add-form button:hover {
+      background: #2d7acc;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    table th {
+      background: var(--bg-card);
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    table tr:hover {
+      background: rgba(61, 142, 240, 0.02);
+    }
+
+    .user-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .user-badge.master {
+      background: var(--danger);
+      color: white;
+    }
+
+    .user-badge.admin {
+      background: var(--accent);
+      color: white;
+    }
+
+    .user-badge.suporte {
+      background: var(--warning);
+      color: white;
+    }
+
+    .user-badge.viewer {
+      background: var(--text-secondary);
+      color: white;
+    }
+
+    .loading,
+    .empty-msg {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .laudos-list,
+    .pdfs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .laudo-item,
+    .pdf-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      transition: all 0.2s;
+    }
+
+    .laudo-item:hover,
+    .pdf-item:hover {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px rgba(61, 142, 240, 0.1);
+    }
+
+    .laudo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .laudo-date {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .laudo-details {
+      margin-bottom: 12px;
+    }
+
+    .laudo-details p {
+      margin: 8px 0;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .laudo-details strong {
+      color: var(--text-secondary);
+    }
+
+    .laudo-actions,
+    .pdf-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .laudo-actions .btn-primary,
+    .laudo-actions .btn-danger,
+    .pdf-actions .btn-primary,
+    .pdf-actions .btn-danger {
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .laudo-actions .btn-danger,
+    .pdf-actions .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .laudo-actions .btn-danger:hover,
+    .pdf-actions .btn-danger:hover {
+      background: #e63946;
+      transform: translateY(-1px);
+    }
+
+    .pdf-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      word-break: break-all;
+    }
+
+    .pdf-icon {
+      font-size: 1.2rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 768px) {
+      .btn-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+
+      .add-form {
+        flex-direction: column;
+      }
+
+      .tab-btn {
+        padding: 12px 16px;
+        font-size: 0.85rem;
+      }
+
+      .config-section {
+        padding: 16px;
+      }
+
+      .laudo-actions,
+      .pdf-actions {
+        flex-direction: column;
+      }
+
+      .btn-primary,
+      .btn-danger {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="logo-area">
+          <img src="/static/img/logo_cemeru.png" class="header-logo-img">
+          <div>
+            <h1 class="app-title">Gerador de Laudos Técnicos</h1>
+          </div>
+        </div>
+        <div class="header-nav">
+          <button class="btn-nav" onclick="window.location.href='/'">Laudos</button>
+          <button class="btn-nav" onclick="window.location.href='/'">Solicitação</button>
+          <button class="btn-nav" onclick="window.location.href='/'">Dashboard</button>
+          <button class="btn-nav active">Configurações</button>
+        </div>
+        <div class="header-user-area">
+          <div id="userBadge" class="user-badge-header">
+            <span id="userNameDisplay">Usuário</span>
+            <span id="userRoleDisplay" class="badge-role">cargo</span>
+          </div>
+          <button class="btn-logout" onclick="handleLogout()" title="Sair">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content config-container">
+
+      <!-- TABS HEADER -->
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('data')">Dados do Sistema</button>
+        <button class="tab-btn" onclick="switchTab('manage')">Gerenciamento</button>
+        <button class="tab-btn" onclick="switchTab('admin')" id="adminTab" style="display:none;">Administração</button>
+      </div>
+
+      <!-- TAB: DADOS DO SISTEMA -->
+      <div id="data" class="tab-content active">
+        <div class="config-section">
+          <div class="section-header">
+            <h2>Gerenciar Dados do Sistema</h2>
+          </div>
+          <p style="color: var(--text-secondary); margin-bottom: 20px;">Clique em uma categoria para editar, adicionar
+            ou remover itens.</p>
+          <div class="btn-grid">
+            <button class="config-btn" onclick="loadCategory('unidades')">Unidades</button>
+            <button class="config-btn" onclick="loadCategory('setores')">Setores</button>
+            <button class="config-btn" onclick="loadCategory('locais')">Locais</button>
+            <button class="config-btn" onclick="loadCategory('analistas')">Analistas</button>
+            <button class="config-btn" onclick="loadCategory('cargos')">Cargos</button>
+            <button class="config-btn" onclick="loadCategory('marcas')">Marcas</button>
+            <button class="config-btn" onclick="loadCategory('modelos')">Modelos</button>
+            <button class="config-btn" onclick="loadCategory('itens')">Equipamentos</button>
+          </div>
+
+          <div id="categoryEditor" class="hidden">
+            <h3 id="categoryTitle"
+              style="margin-top: 20px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
+              Categoria</h3>
+            <div class="add-form"
+              style="margin-bottom: 20px; background: var(--bg-surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+              <input type="text" id="newItemInput" placeholder="Novo item..."
+                style="border: none; background: transparent; padding: 8px; font-size: 13px;" />
+              <button class="btn-action-small" onclick="addNewItem()"
+                style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-secondary);">Adicionar</button>
+            </div>
+            <div class="item-list" id="itemsContainer">
+              <div class="loading">Carregando...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: GERENCIAMENTO -->
+      <div id="manage" class="tab-content">
+        <div class="config-section">
+          <div class="section-header">
+            <h2>Gerenciar Laudos</h2>
+          </div>
+          <p style="color: var(--text-secondary); margin-bottom: 20px;">Gerencie os laudos gerados no sistema.</p>
+
+          <div class="search-filter-wrap">
+            <input type="text" id="laudoSearchInput" placeholder="Pesquisar por ID, unidade ou analista..."
+              oninput="filterLaudosTable()">
+          </div>
+
+          <div id="manageContent" style="min-height: 200px;">
+            <div class="loading">Carregando laudos...</div>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <div class="section-header">
+            <h2>Laudos Históricos</h2>
+          </div>
+          <p style="color: var(--text-secondary); margin-bottom: 20px;">Acesse laudos antigos e histórico.</p>
+          <div id="legacyContent" style="min-height: 200px;">
+            <div class="loading">Carregando laudos históricos...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ADMINISTRAÇÃO -->
+      <div id="admin" class="tab-content">
+        <div class="config-section">
+          <div class="section-header">
+            <h2>Configurações Administrativas</h2>
+          </div>
+          <p style="color: var(--text-secondary); margin-bottom: 20px;">Selecione um módulo administrativo para
+            gerenciar.</p>
+
+          <div class="btn-grid">
+            <button class="config-btn" onclick="loadAdminModule('backup')">Backup em Rede</button>
+            <button class="config-btn" onclick="loadAdminModule('users')">Gestão de Usuários</button>
+            <button class="config-btn" onclick="loadAdminModule('profile')">Meu Perfil</button>
+          </div>
+
+          <!-- ADMIN MODULE: BACKUP -->
+          <div id="admin-backup" class="admin-module hidden"
+            style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <h3>Backup em Rede</h3>
+            <div class="form-group" style="margin-top:16px;">
+              <label>Caminho de Rede Compartilhada</label>
+              <input type="text" id="networkPathInput" placeholder="Ex: \\servidor\backups">
+              <small>Caminho UNC para pasta compartilhada</small>
+            </div>
+            <div
+              style="margin-top: 15px; padding: 12px; background: rgba(61, 142, 240, 0.05); border-radius: 6px; border-left: 3px solid var(--accent);">
+              <p style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">A rotina de backup automático está
+                configurada para todos os dias às <strong>20:00</strong>.</p>
+            </div>
+            <button class="btn-secondary" onclick="saveNetworkPath()"
+              style="margin-top: 15px; padding: 6px 14px; font-size: 12px;">Salvar
+              Configuração</button>
+          </div>
+
+          <!-- ADMIN MODULE: USERS -->
+          <div id="admin-users" class="admin-module hidden"
+            style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3>Gestão de Usuários</h3>
+              <button class="btn-action-small" onclick="toggleAddUserForm()">+ Novo Usuário</button>
+            </div>
+
+            <div id="addUserForm" class="hidden"
+              style="background: var(--bg-surface); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px;">
+              <div class="add-form" style="display:flex; flex-direction:column; gap:12px;">
+                <input type="text" id="newUsername" placeholder="Usuário">
+                <input type="password" id="newPassword" placeholder="Senha">
+                <select id="newUserRole">
+                  <option value="viewer">Consultor</option>
+                  <option value="suporte">Suporte</option>
+                  <option value="admin">Administrador</option>
+                </select>
+                <div style="display:flex; gap:10px;">
+                  <button class="btn-primary" onclick="createUser()">Criar Usuário</button>
+                  <button class="btn-secondary" onclick="toggleAddUserForm()">Cancelar</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="usersContent">
+              <div class="loading">Carregando usuários...</div>
+            </div>
+          </div>
+
+          <!-- ADMIN MODULE: PROFILE -->
+          <div id="admin-profile" class="admin-module hidden"
+            style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <h3>Meu Perfil</h3>
+            <div class="form-group" style="margin-top:16px;">
+              <label>Nome Completo</label>
+              <input type="text" id="profileFullName" placeholder="Seu nome">
+            </div>
+            <div class="form-group">
+              <label>Nova Senha</label>
+              <input type="password" id="profilePassword" placeholder="Nova senha">
+            </div>
+            <div class="form-group">
+              <label>Confirmar Senha</label>
+              <input type="password" id="profileConfirmPassword" placeholder="Confirme a senha">
+            </div>
+            <button class="btn-secondary" onclick="saveProfile()" style="padding: 6px 14px; font-size: 12px;">Salvar
+              Alterações</button>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/static/data_options.js?v=15"></script>
+
+  <script>
+    let currentCategory = null;
+    let currentUser = { username: '', role: '', fullName: '' };
+
+    // AUTH
+    async function checkServerAuth() {
+      try {
+        const res = await fetch('/api/me', { cache: 'no-store' });
+        if (res.status === 401) return false;
+        if (res.ok) {
+          const me = await res.json();
+          if (me.success) {
+            currentUser.username = me.username || '';
+            currentUser.role = me.role || '';
+            currentUser.fullName = me.full_name || '';
+            return true;
+          }
+        }
+        return false;
+      } catch (err) {
+        console.error('Auth error:', err);
+        return false;
+      }
+    }
+
+    function updateUserDisplay() {
+      document.getElementById('userNameDisplay').textContent = currentUser.fullName || currentUser.username || 'Usuário';
+      document.getElementById('userRoleDisplay').textContent = currentUser.role || '';
+    }
+
+    function showAdminTab() {
+      const tab = document.getElementById('adminTab');
+      if (tab) tab.style.display = (currentUser.role === 'admin' || currentUser.role === 'master') ? 'inline-block' : 'none';
+    }
+
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      if (toast) {
+        toast.textContent = msg;
+        toast.className = `toast ${type}`;
+        setTimeout(() => toast.classList.add('hidden'), 3000);
+      }
+    }
+
+    function handleLogout() {
+      fetch('/api/logout', { method: 'POST' }).then(() => {
+        window.location.href = '/';
+      }).catch(err => console.error('Logout error:', err));
+    }
+
+    // TABS
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const tab_element = document.getElementById(tab);
+      if (tab_element) tab_element.classList.add('active');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.getAttribute('onclick').includes(`switchTab('${tab}')`)) {
+          btn.classList.add('active');
+        }
+      });
+
+      // Load data when switching tabs
+      if (tab === 'manage') {
+        loadLaudos();
+        loadLegacyPdfs();
+      }
+    }
+
+    // CATEGORIAS
+    async function loadCategory(category) {
+      currentCategory = category;
+      document.getElementById('categoryEditor').classList.remove('hidden');
+
+      const titles = {
+        'unidades': 'Unidades', 'setores': 'Setores', 'locais': 'Locais',
+        'analistas': 'Analistas', 'cargos': 'Cargos', 'marcas': 'Marcas',
+        'modelos': 'Modelos', 'itens': 'Equipamentos'
+      };
+      document.getElementById('categoryTitle').textContent = titles[category] || category;
+      await renderItems();
+    }
+
+    async function renderItems() {
+      const container = document.getElementById('itemsContainer');
+      container.innerHTML = '<div class="loading">Carregando...</div>';
+
+      try {
+        const data = await loadDataOptions();
+        const items = data[currentCategory] || [];
+
+        if (items.length === 0) {
+          container.innerHTML = '<div class="empty-msg">Nenhum item</div>';
+          return;
+        }
+
+        const html = items.map(item => {
+          const displayText = typeof item === 'string' ? item : (item.nome || String(item));
+          const itemId = typeof item === 'string' ? null : item.id;
+          const isAdmin = currentUser.role === 'admin' || currentUser.role === 'master';
+
+          return `
+            <div class="list-item" id="item-${itemId}" style="padding: 10px 14px; border-bottom: 1px solid var(--border); border-radius: 0; display: flex; justify-content: space-between; align-items: center; border-left: none; border-right: none; background: transparent;">
+              <span class="list-item-text" id="text-${itemId}" style="font-size: 13px;">${displayText}</span>
+              <div class="list-item-actions" style="display: flex; gap: 8px;">
+                ${isAdmin ? `<button class="btn-action-small" onclick="startEditItem(${itemId}, '${displayText.replace(/'/g, "\\'")}')">Editar</button>` : ''}
+                <button class="btn-action-small btn-delete" onclick="deleteItemFromAPI(${itemId})">Remover</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        container.innerHTML = `<div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-card);">${html}</div>`;
+      } catch (err) {
+        console.error('Error:', err);
+        container.innerHTML = '<div class="empty-msg">Erro ao carregar</div>';
+      }
+    }
+
+    async function addNewItem() {
+      const input = document.getElementById('newItemInput');
+      const value = input.value.trim();
+
+      if (!value) {
+        showToast('Digite um item válido', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/options', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category: currentCategory, value: value })
+        });
+
+        if (!response.ok) {
+          showToast('Erro ao adicionar', 'error');
+          return;
+        }
+
+        const json = await response.json();
+        if (json.success) {
+          input.value = '';
+          showToast('✓ Item adicionado', 'success');
+          await renderItems();
+        } else {
+          showToast('Erro ao adicionar', 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao adicionar', 'error');
+      }
+    }
+
+    function startEditItem(id, currentValue) {
+      const itemDiv = document.getElementById(`item-${id}`);
+      if (!itemDiv) return;
+
+      itemDiv.innerHTML = `
+        <input type="text" id="edit-input-${id}" value="${currentValue}" class="edit-item-input" 
+               onkeydown="if(event.key==='Enter') saveEditItem(${id}); if(event.key==='Escape') cancelEditItem(${id})" />
+        <div class="list-item-actions">
+          <button class="btn-primary" onclick="saveEditItem(${id})" style="margin-right: 8px;">Salvar</button>
+          <button class="btn-secondary" onclick="cancelEditItem(${id})">Cancelar</button>
+        </div>
+      `;
+      document.getElementById(`edit-input-${id}`).focus();
+    }
+
+    async function saveEditItem(id) {
+      const newValue = document.getElementById(`edit-input-${id}`).value.trim();
+      if (!newValue) {
+        showToast('Digite um valor', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/options/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: newValue })
+        });
+
+        const json = await response.json();
+        if (json.success) {
+          showToast('✓ Item atualizado', 'success');
+          await renderItems();
+        } else {
+          showToast('Erro ao atualizar', 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao atualizar', 'error');
+      }
+    }
+
+    function cancelEditItem(id) {
+      renderItems();
+    }
+
+    async function deleteItemFromAPI(id) {
+      if (!id || isNaN(id)) {
+        showToast('ID inválido', 'error');
+        return;
+      }
+
+      if (!confirm('Remover este item?')) return;
+
+      try {
+        const response = await fetch(`/api/options/${id}`, { method: 'DELETE' });
+
+        if (!response.ok) {
+          showToast('Erro ao remover', 'error');
+          return;
+        }
+
+        const json = await response.json();
+        if (json.success) {
+          showToast('✓ Item removido', 'success');
+          await renderItems();
+        } else {
+          showToast('Erro ao remover', 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao remover', 'error');
+      }
+    }
+
+    // LAUDOS
+    let allLaudosLocal = [];
+
+    async function loadLaudos() {
+      const container = document.getElementById('manageContent');
+      if (!container) return;
+
+      container.innerHTML = '<div class="loading">Carregando laudos...</div>';
+
+      try {
+        const res = await fetch('/api/laudos');
+        const data = await res.json();
+
+        if (!data.success || !data.data || data.data.length === 0) {
+          allLaudosLocal = [];
+          container.innerHTML = '<div class="empty-msg">Nenhum laudo encontrado</div>';
+          return;
+        }
+
+        allLaudosLocal = data.data;
+        renderLaudosTable(allLaudosLocal);
+      } catch (err) {
+        console.error('Error loading laudos:', err);
+        container.innerHTML = '<div class="empty-msg">Erro ao carregar laudos</div>';
+      }
+    }
+
+    function renderLaudosTable(laudos) {
+      const container = document.getElementById('manageContent');
+      const isAdmin = currentUser.role === 'admin' || currentUser.role === 'master';
+
+      const html = `
+        <div class="compact-table-wrap">
+          <table class="compact-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Data</th>
+                <th>Unidade</th>
+                <th>Responsável</th>
+                <th>Status</th>
+                <th style="text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${laudos.map(laudo => {
+        const safeId = (laudo.id_laudo || '').replace(/\//g, '_');
+        const tipoLabel = laudo.tipo === 'compra' ? 'COMPRA' : 'LAUDO';
+        const tipoClass = laudo.tipo === 'compra' ? 'status-purchase' : 'status-official';
+
+        return `
+                <tr>
+                  <td><strong>${laudo.id_laudo || laudo.id}</strong></td>
+                  <td>${new Date(laudo.data || laudo.timestamp).toLocaleDateString('pt-BR')}</td>
+                  <td>${laudo.unidade || '-'}</td>
+                  <td>${laudo.nome_analista || '-'}</td>
+                  <td>
+                    <span class="${tipoClass}">${tipoLabel}</span>
+                    ${laudo.is_test ? '<span class="is-test-badge">TESTE</span>' : ''}
+                  </td>
+                  <td style="text-align: right;">
+                    <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                      <button class="btn-action-small" onclick="viewLaudoPdf('${laudo.id_laudo}')">Ver</button>
+                      ${isAdmin ? `<button class="btn-action-small btn-delete" onclick="deleteLaudo(${laudo.id})">Excluir</button>` : ''}
+                    </div>
+                  </td>
+                </tr>
+                `;
+      }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      container.innerHTML = html;
+    }
+
+    function filterLaudosTable() {
+      const query = (document.getElementById('laudoSearchInput')?.value || '').toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+      const filtered = allLaudosLocal.filter(l => {
+        const text = `${l.id_laudo} ${l.unidade} ${l.nome_analista} ${l.tipo}`.toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return text.includes(query);
+      });
+
+      renderLaudosTable(filtered);
+    }
+
+    function viewLaudoPdf(laudoId) {
+      if (!laudoId) return;
+      const safeId = laudoId.replace(/\//g, '_');
+      window.open(`/api/view-pdf/Laudo_${safeId}.pdf`, '_blank');
+    }
+
+    async function loadLegacyPdfs() {
+      const container = document.getElementById('legacyContent');
+      if (!container) return;
+
+      container.innerHTML = '<div class="loading">Carregando laudos históricos...</div>';
+
+      try {
+        const res = await fetch('/api/legacy-pdfs');
+        const data = await res.json();
+
+        if (!data.success || !data.files || data.files.length === 0) {
+          container.innerHTML = '<div class="empty-msg">Nenhum laudo histórico encontrado</div>';
+          return;
+        }
+
+        const isAdmin = currentUser.role === 'admin' || currentUser.role === 'master';
+        const html = `
+          <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-card);">
+            ${data.files.map((file) => {
+          const filename = typeof file === 'string' ? file : (file.name || file);
+          const safeFilename = filename.replace(/'/g, "\\'");
+          const sizeKb = file.size ? `(${(file.size / 1024).toFixed(0)} KB)` : '';
+          return `
+                <div class="legacy-file-item" style="padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: transparent;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="display: flex; flex-direction: column;">
+                       <span style="font-size: 13px; font-weight: 500;">${filename}</span>
+                       <small style="color: var(--text-secondary); opacity: 0.7;">${sizeKb}</small>
+                    </div>
+                  </div>
+                  <div class="legacy-file-actions" style="display: flex; gap: 8px;">
+                    <button class="btn-action-small" onclick="viewLegacyPdf('${safeFilename}')" style="color: var(--accent);">Visualizar</button>
+                    ${isAdmin ? `<button class="btn-action-small" onclick="deletePdf('${safeFilename}')" style="color: var(--danger); opacity: 0.6;">Remover</button>` : ''}
+                  </div>
+                </div>
+              `;
+        }).join('')}
+          </div>
+        `;
+        container.innerHTML = html;
+      } catch (err) {
+        console.error('Error loading legacy PDFs:', err);
+        console.error('Full error:', err.message);
+        container.innerHTML = '<div class="empty-msg">Erro ao carregar laudos históricos</div>';
+      }
+    }
+
+    function viewLegacyPdf(filename) {
+      window.open(`/api/view-legacy-pdf/${encodeURIComponent(filename)}`, '_blank');
+    }
+
+    function deleteLaudo(laudoId) {
+      if (!confirm('Remover este laudo?')) return;
+
+      fetch(`/api/laudos/${laudoId}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            showToast('✓ Laudo removido', 'success');
+            loadLaudos();
+          } else {
+            showToast('Erro ao remover', 'error');
+          }
+        })
+        .catch(err => showToast('Erro ao remover', 'error'));
+    }
+
+    function deletePdf(filename) {
+      if (!confirm('Remover este PDF?')) return;
+
+      fetch(`/api/legacy-pdfs/${encodeURIComponent(filename)}`, {
+        method: 'DELETE'
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            showToast('✓ PDF removido', 'success');
+            loadLegacyPdfs();
+          } else {
+            showToast('Erro ao remover', 'error');
+          }
+        })
+        .catch(err => showToast('Erro ao remover', 'error'));
+    }
+
+    // BACKUP
+    async function saveNetworkPath() {
+      const path = document.getElementById('networkPathInput').value;
+      if (!path) {
+        showToast('Digite um caminho', 'error');
+        return;
+      }
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ network_path: path })
+        });
+        const data = await res.json();
+        if (data.success) showToast('✓ Caminho salvo', 'success');
+      } catch (err) {
+        showToast('Erro ao salvar', 'error');
+      }
+    }
+
+    async function backupNow() {
+      showToast('Iniciando backup...', 'info');
+      try {
+        const res = await fetch('/api/admin/backup', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) showToast('✓ Backup concluído', 'success');
+        else showToast('Erro no backup: ' + (data.message || ''), 'error');
+      } catch (err) {
+        showToast('Erro ao realizar backup', 'error');
+      }
+    }
+
+    // ADMIN MODULES
+    function loadAdminModule(module) {
+      document.querySelectorAll('.admin-module').forEach(m => m.classList.add('hidden'));
+      const target = document.getElementById(`admin-${module}`);
+      if (target) {
+        target.classList.remove('hidden');
+        if (module === 'users') loadUsers();
+      }
+    }
+
+    // USUÁRIOS
+    function toggleAddUserForm() {
+      document.getElementById('addUserForm').classList.toggle('hidden');
+    }
+
+    async function createUser() {
+      const username = document.getElementById('newUsername').value;
+      const password = document.getElementById('newPassword').value;
+      const role = document.getElementById('newUserRole').value;
+
+      if (!username || !password) {
+        showToast('Preencha todos os campos', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, role })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✓ Usuário criado', 'success');
+          document.getElementById('newUsername').value = '';
+          document.getElementById('newPassword').value = '';
+          toggleAddUserForm();
+          loadUsers();
+        } else {
+          showToast('Erro ao criar usuário', 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao criar', 'error');
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/admin/users');
+        const data = await res.json();
+        const users = data.data || []; // Corrected: backend returns "data" key
+
+        if (data.success && users) {
+          const html = `
+            <div class="compact-table-wrap">
+              <table class="compact-table">
+                <thead>
+                  <tr>
+                    <th>Usuário</th>
+                    <th>Função</th>
+                    <th style="text-align: right;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${users.map(user => `
+                    <tr>
+                      <td><strong>${user.username}</strong></td>
+                      <td><span class="badge-role ${user.role || 'viewer'}">${user.role || 'viewer'}</span></td>
+                      <td style="text-align: right;">
+                        <span class="status-dot ${user.is_active ? 'active' : 'inactive'}"></span>
+                        <small>${user.is_active ? 'Ativo' : 'Inativo'}</small>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+          document.getElementById('usersContent').innerHTML = html;
+        }
+      } catch (err) {
+        console.error('Error loading users:', err);
+        document.getElementById('usersContent').innerHTML = '<div class="empty-msg">Erro ao carregar usuários</div>';
+      }
+    }
+
+    // PERFIL
+    function loadProfileUI() {
+      document.getElementById('profileFullName').value = currentUser.fullName || '';
+      document.getElementById('profilePassword').value = '';
+      document.getElementById('profileConfirmPassword').value = '';
+    }
+
+    async function saveProfile() {
+      const fullName = document.getElementById('profileFullName').value;
+      const password = document.getElementById('profilePassword').value;
+      const confirmPassword = document.getElementById('profileConfirmPassword').value;
+
+      if (password && password !== confirmPassword) {
+        showToast('Senhas não conferem', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name: fullName, password: password || null })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✓ Perfil atualizado', 'success');
+          currentUser.fullName = fullName;
+          updateUserDisplay();
+        }
+      } catch (err) {
+        showToast('Erro ao salvar', 'error');
+      }
+    }
+
+    // INIT
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const authed = await checkServerAuth();
+        if (!authed) {
+          window.location.href = '/';
+          return;
+        }
+        updateUserDisplay();
+        showAdminTab();
+        // Load initial data
+        loadLaudos();
+        loadLegacyPdfs();
+      } catch (err) {
+        console.error('Init error:', err);
+      }
+    });
+  </script>
+</body>
+
+</html>

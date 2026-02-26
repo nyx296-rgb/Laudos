@@ -3,11 +3,38 @@ import shutil
 import json
 import sqlite3
 import re
+import csv
+import io
+import secrets
+import bcrypt
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file, send_from_directory, render_template, session, redirect, url_for
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from apscheduler.schedulers.background import BackgroundScheduler
+
+# Carregar arquivo .env se existir
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv não instalado, usar variáveis de sistema
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-app.secret_key = 'laudo-secret-key-123'  # Simple key for sessions
+# Gerar secret_key segura de forma dinâmica
+app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
+
+# rate limiting
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
+# Agendador de tarefas
+scheduler = BackgroundScheduler()
+scheduler.start()
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,7 +58,8 @@ def init_db():
             password TEXT NOT NULL,
             role TEXT DEFAULT 'suporte',
             full_name TEXT,
-            is_active INTEGER DEFAULT 1
+            is_active INTEGER DEFAULT 1,
+            requires_password_change INTEGER DEFAULT 0
         )
     ''')
     
@@ -40,11 +68,14 @@ def init_db():
     user_new_cols = [
         ('role', 'TEXT DEFAULT "suporte"'),
         ('full_name', 'TEXT'),
-        ('is_active', 'INTEGER DEFAULT 1')
+        ('is_active', 'INTEGER DEFAULT 1'),
+        ('requires_password_change', 'INTEGER DEFAULT 0')
     ]
     for col_name, col_type in user_new_cols:
         if col_name not in user_columns:
-            cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}")
+            # Validar nomes de coluna para prevenir SQL injection
+            if col_name in ['role', 'full_name', 'is_active', 'requires_password_change']:
+                cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}")
     # Table for laudos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS laudos (
@@ -78,17 +109,27 @@ def init_db():
         ('item_defeito', 'TEXT'),
         ('cargo_analista', 'TEXT'),
         ('is_test', 'INTEGER DEFAULT 0'),
-        ('tipo', 'TEXT DEFAULT "laudo"')
+        ('tipo', 'TEXT DEFAULT "laudo"'),
+        ('chamado', 'TEXT')
     ]
     for col_name, col_type in new_cols:
         if col_name not in columns:
-            cursor.execute(f"ALTER TABLE laudos ADD COLUMN {col_name} {col_type}")
+            # Validar nomes de coluna para prevenir SQL injection
+            valid_cols = ['marca', 'modelo', 'serie', 'situacao', 'item_defeito', 'cargo_analista', 'is_test', 'tipo', 'chamado']
+            if col_name in valid_cols:
+                cursor.execute(f"ALTER TABLE laudos ADD COLUMN {col_name} {col_type}")
     cursor.execute('SELECT password FROM users WHERE username = "admin"')
     existing_admin = cursor.fetchone()
+    # Hash padrão segura para admin inicial
+    DEFAULT_ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'ChangeMe@123')
+    default_password_hash = bcrypt.hashpw(DEFAULT_ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
     if not existing_admin:
-        cursor.execute('INSERT INTO users (username, password, role, full_name) VALUES ("admin", "cemeru@123", "master", "Administrador")')
-    elif existing_admin[0] != 'cemeru@123':
-        cursor.execute('UPDATE users SET password = "cemeru@123", role = "master" WHERE username = "admin"')
+        cursor.execute('INSERT INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)', 
+                      ('admin', default_password_hash, 'master', 'Administrador'))
+    else:
+        # Apenas atualize se ainda estiver com a senha padrão antiga (para migração)
+        print("⚠️  Admin já existe. Se necessário redefinir, use o painel de administração.")
     
     # Table for settings
     cursor.execute('''
@@ -182,7 +223,21 @@ except Exception:
 
 @app.route('/')
 def index():
+    if 'user_id' in session and session.get('role') == 'viewer':
+        return redirect(url_for('viewer'))
     return render_template('index.html')
+
+@app.route('/viewer')
+def viewer():
+    if 'user_id' not in session or session.get('role') != 'viewer':
+        return redirect(url_for('index'))
+    return render_template('viewer.html')
+
+@app.route('/config')
+def config():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+    return render_template('config.html')
 
 @app.after_request
 def add_header(response):
@@ -221,7 +276,99 @@ def role_required(roles):
        return decorated_function
     return decorator
 
+# ============================================================
+# FUNÇÕES DE BACKUP E AGENDAMENTO
+# ============================================================
+
+def perform_backup():
+    """Executa o backup dos laudos para a rede (função reutilizável)"""
+    import os
+    import shutil
+    from datetime import datetime
+    
+    try:
+        # Obter caminho de rede configurado
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('SELECT value FROM settings WHERE key = "network_path"')
+        row = cursor.fetchone()
+        conn.close()
+        
+        network_path = row[0] if row else NETWORK_PATH_DEFAULT
+        
+        if not network_path or not os.path.exists(network_path):
+            print(f'[BACKUP] Caminho de rede não acessível: {network_path}')
+            return False, f'Caminho não acessível: {network_path}', 0
+        
+        # Criar subpasta com data
+        backup_date = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        backup_folder = os.path.join(network_path, f'backup_{backup_date}')
+        os.makedirs(backup_folder, exist_ok=True)
+        
+        # Copiar PDFs da pasta static/laudos
+        laudos_source = 'static/laudos'
+        files_count = 0
+        
+        if os.path.exists(laudos_source):
+            for file in os.listdir(laudos_source):
+                if file.endswith('.pdf'):
+                    src = os.path.join(laudos_source, file)
+                    dst = os.path.join(backup_folder, file)
+                    shutil.copy2(src, dst)
+                    files_count += 1
+        
+        # Salvar data do último backup
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+                      ('last_backup', datetime.now().isoformat()))
+        conn.commit()
+        conn.close()
+        
+        print(f'[BACKUP] Concluído: {files_count} arquivo(s) em {backup_folder}')
+        return True, f'{files_count} arquivo(s) copiado(s)', files_count
+        
+    except Exception as e:
+        print(f'[BACKUP] Erro: {str(e)}')
+        return False, f'Erro ao fazer backup: {str(e)}', 0
+
+def setup_backup_scheduler():
+    """Configura o agendador de backup diário"""
+    try:
+        # Obter configuração do banco de dados
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('SELECT value FROM settings WHERE key = "auto_backup_enabled"')
+        row = cursor.fetchone()
+        auto_backup = row[0] == '1' if row else False
+        conn.close()
+        
+        # Remover job anterior se existir
+        if scheduler.get_job('daily_backup'):
+            scheduler.remove_job('daily_backup')
+        
+        # Agendar se habilitado
+        if auto_backup:
+            scheduler.add_job(
+                perform_backup,
+                'cron',
+                hour=20,
+                minute=0,
+                id='daily_backup',
+                name='Daily Backup at 20:00'
+            )
+            print('[SCHEDULER] Backup diário agendado para 20:00')
+        else:
+            print('[SCHEDULER] Backup automático desabilitado')
+            
+    except Exception as e:
+        print(f'[SCHEDULER] Erro ao configurar: {str(e)}')
+
+# Configurar scheduler na inicialização
+setup_backup_scheduler()
+
 @app.route('/api/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")  # Rate limit for login
 def login():
     if request.method == 'GET':
         if 'user_id' in session:
@@ -229,7 +376,8 @@ def login():
                 'success': True,
                 'username': session.get('username'),
                 'role': session.get('role'),
-                'full_name': session.get('full_name')
+                'full_name': session.get('full_name'),
+                'requires_password_change': session.get('requires_password_change', False)
             })
         return jsonify({'success': False, 'error': 'Não logado'}), 401
 
@@ -239,26 +387,41 @@ def login():
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('SELECT id, username, role, full_name, is_active FROM users WHERE username = ? AND password = ?', (user, pw))
+    cursor.execute('SELECT id, username, password, role, full_name, is_active, requires_password_change FROM users WHERE username = ?', (user,))
     row = cursor.fetchone()
     conn.close()
     
-    if row:
-        if not row[4]: # is_active
+    if row and bcrypt.checkpw(pw.encode('utf-8'), row[2].encode('utf-8')):
+        if not row[5]: # is_active
             return jsonify({'success': False, 'error': 'Usuário inativo'}), 403
             
         session['user_id'] = row[0]
         session['username'] = row[1]
-        session['role'] = row[2]
-        session['full_name'] = row[3]
+        session['role'] = row[3]
+        session['full_name'] = row[4]
+        session['requires_password_change'] = bool(row[6])
         
         return jsonify({
             'success': True, 
-            'role': row[2], 
+            'role': row[3], 
             'username': row[1],
-            'full_name': row[3]
+            'full_name': row[4],
+            'requires_password_change': bool(row[6])
         })
     return jsonify({'success': False, 'error': 'Usuário ou senha inválidos'}), 401
+
+@app.route('/api/me', methods=['GET'])
+def get_current_user():
+    """Verify session and return current user details."""
+    if 'user_id' in session:
+        return jsonify({
+            'success': True,
+            'username': session.get('username'),
+            'role': session.get('role'),
+            'full_name': session.get('full_name')
+        })
+    return jsonify({'success': False, 'error': 'Não logado'}), 401
+
 
 @app.route('/api/admin/users', methods=['GET'])
 @role_required(['master', 'admin'])
@@ -280,22 +443,30 @@ def list_users():
 @role_required(['master', 'admin'])
 def create_user():
     data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
     role = data.get('role', 'suporte')
-    full_name = data.get('full_name')
+    full_name = data.get('full_name', '').strip()
     
     print(f"Creating new user: {username} (Role: {role}, Name: {full_name})")
     
-    if not username or not password:
-        print("Error: Username and password are required.")
-        return jsonify({'success': False, 'error': 'Usuário e senha são obrigatórios'}), 400
+    if not username or not password or len(password) < 8:
+        print("Error: Username and password (min 8 chars) are required.")
+        return jsonify({'success': False, 'error': 'Usuário e senha (mín 8 caracteres) são obrigatórios'}), 400
+    
+    # Validar role
+    valid_roles = ['suporte', 'viewer', 'admin', 'master']
+    if role not in valid_roles:
+        return jsonify({'success': False, 'error': 'Role inválido'}), 400
+        
+    # Hash da senha
+    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        cursor.execute('INSERT INTO users (username, password, role, full_name, is_active) VALUES (?, ?, ?, ?, 1)',
-                       (username, password, role, full_name))
+        cursor.execute('INSERT INTO users (username, password, role, full_name, is_active, requires_password_change) VALUES (?, ?, ?, ?, 1, 1)',
+                       (username, password_hash, role, full_name))
         conn.commit()
         print(f"User {username} created successfully in database.")
         return jsonify({'success': True})
@@ -323,23 +494,29 @@ def update_user(user_id):
     updates = []
     params = []
     if role:
+        valid_roles = ['suporte', 'viewer', 'admin', 'master']
+        if role not in valid_roles:
+            return jsonify({'success': False, 'error': 'Role inválido'}), 400
         updates.append("role = ?")
         params.append(role)
     if full_name:
         updates.append("full_name = ?")
-        params.append(full_name)
+        params.append(full_name.strip())
     if is_active is not None:
         updates.append("is_active = ?")
         params.append(1 if is_active else 0)
-    if password:
+    if password and len(password) >= 8:
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         updates.append("password = ?")
-        params.append(password)
+        params.append(password_hash)
+        updates.append("requires_password_change = 0")
         
     if not updates:
         return jsonify({'success': False, 'error': 'Nenhum dado para atualizar'}), 400
         
     params.append(user_id)
-    cursor.execute(f'UPDATE users SET {", ".join(updates)} WHERE id = ?', params)
+    set_clause = ", ".join(updates)
+    cursor.execute(f'UPDATE users SET {set_clause} WHERE id = ?', params)
     conn.commit()
     conn.close()
     return jsonify({'success': True})
@@ -363,8 +540,8 @@ def update_profile():
         return jsonify({'success': False, 'error': 'Não autorizado'}), 401
         
     data = request.get_json()
-    full_name = data.get('full_name')
-    password = data.get('password')
+    full_name = data.get('full_name', '').strip()
+    password = data.get('password', '').strip()
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -375,15 +552,21 @@ def update_profile():
         updates.append("full_name = ?")
         params.append(full_name)
         session['full_name'] = full_name
-    if password:
+    if password and len(password) >= 8:
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         updates.append("password = ?")
-        params.append(password)
+        params.append(password_hash)
+        updates.append("requires_password_change = 0")
+        session['requires_password_change'] = False
+    elif password and len(password) < 8:
+        return jsonify({'success': False, 'error': 'Senha deve ter no mínimo 8 caracteres'}), 400
         
     if not updates:
         return jsonify({'success': False, 'error': 'Nenhum dado para atualizar'}), 400
         
     params.append(session['user_id'])
-    cursor.execute(f'UPDATE users SET {", ".join(updates)} WHERE id = ?', params)
+    set_clause = ", ".join(updates)
+    cursor.execute(f'UPDATE users SET {set_clause} WHERE id = ?', params)
     conn.commit()
     conn.close()
     return jsonify({'success': True})
@@ -416,18 +599,6 @@ def logout():
     session.clear()
     return jsonify({'success': True})
 
-@app.route('/api/me')
-def get_me():
-    """Returns the current session user's info, or 401 if not logged in."""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Não autorizado'}), 401
-    return jsonify({
-        'success': True,
-        'username': session.get('username'),
-        'role': session.get('role'),
-        'full_name': session.get('full_name')
-    })
-
 @app.route('/api/tasy')
 def get_tasy():
     return jsonify({'success': True, 'data': TASY_DATA_CACHE})
@@ -444,8 +615,8 @@ def gerar_laudo():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO laudos (id_laudo, data, unidade, setor, local, nome_analista, descricao_problema, marca, modelo, serie, situacao, item_defeito, cargo_analista, itens_count, is_test, tipo)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO laudos (id_laudo, data, unidade, setor, local, nome_analista, descricao_problema, marca, modelo, serie, situacao, item_defeito, cargo_analista, itens_count, is_test, tipo, chamado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('id_laudo'),
             data.get('data'),
@@ -462,7 +633,8 @@ def gerar_laudo():
             data.get('cargo_analista'),
             len(data.get('equipamentos', [])),
             1 if data.get('is_test') else 0,
-            data.get('tipo', 'laudo')
+            data.get('tipo', 'laudo'),
+            data.get('chamado', '')
         ))
         conn.commit()
         conn.close()
@@ -523,7 +695,7 @@ def gerar_laudo():
         return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
 
 @app.route('/api/stats')
-@role_required(['master', 'suporte', 'viewer'])
+@role_required(['master', 'suporte', 'viewer', 'admin'])
 def get_stats():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -537,13 +709,17 @@ def get_stats():
     total_compras = cursor.fetchone()[0]
     
     # Stats by Unit (Top 5 for chart)
-    cursor.execute('SELECT unidade, COUNT(*) FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" GROUP BY unidade ORDER BY COUNT(*) DESC')
+    cursor.execute('SELECT unidade, COUNT(*) FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" GROUP BY unidade ORDER BY COUNT(*) DESC LIMIT 5')
     unidades = cursor.fetchall()
     
     # Stats by Item (Top 5 for chart)
     cursor.execute('SELECT item_defeito, COUNT(*) FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" AND item_defeito IS NOT NULL AND item_defeito != "" GROUP BY item_defeito ORDER BY COUNT(*) DESC LIMIT 5')
     itens = cursor.fetchall()
     
+    # Stats by Analyst (Top 5 for chart)
+    cursor.execute('SELECT nome_analista, COUNT(*) FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" AND nome_analista IS NOT NULL AND nome_analista != "" GROUP BY nome_analista ORDER BY COUNT(*) DESC LIMIT 5')
+    analistas = cursor.fetchall()
+
     # Recent laudos
     cursor.execute('SELECT id_laudo, data, unidade, setor, is_test, tipo FROM laudos WHERE id_laudo NOT LIKE "IMP-%" ORDER BY timestamp DESC LIMIT 10')
     recent = cursor.fetchall()
@@ -556,11 +732,12 @@ def get_stats():
         'total_compras': total_compras,
         'unidades': unidades,
         'itens': itens,
+        'analistas': analistas,
         'recent': recent
     })
 
 @app.route('/api/laudos', methods=['GET'])
-@role_required(['master', 'suporte', 'viewer'])
+@role_required(['master', 'suporte', 'viewer', 'admin'])
 def get_laudos():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -582,7 +759,7 @@ def get_laudos():
     return jsonify({'success': True, 'data': laudos})
 
 @app.route('/api/laudos/<int:id>', methods=['DELETE'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def delete_laudo(id):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -602,18 +779,18 @@ def toggle_test(id):
     return jsonify({'success': True})
 
 @app.route('/api/reports/incidences')
-@role_required(['master', 'suporte', 'viewer'])
+@role_required(['master', 'suporte', 'viewer', 'admin'])
 def get_incidence_report():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Incidences of item_defeito by unidade
+    # Incidences of item_defeito by unidade (Gargalos)
     cursor.execute('''
-        SELECT item_defeito, unidade, COUNT(*) as count 
+        SELECT item_defeito, COUNT(*) as total_ocorr, GROUP_CONCAT(DISTINCT unidade) as unidades 
         FROM laudos 
         WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" AND item_defeito IS NOT NULL AND item_defeito != ""
-        GROUP BY item_defeito, unidade 
-        ORDER BY count DESC
+        GROUP BY item_defeito 
+        ORDER BY total_ocorr DESC
     ''')
     incidences = cursor.fetchall()
     
@@ -635,6 +812,82 @@ def get_incidence_report():
         'incidences': incidences,
         'problem_items': problem_items
     })
+
+@app.route('/api/reports/export')
+@role_required(['master', 'admin', 'suporte'])
+def export_report():
+    data_inicio = request.args.get('inicio', '')
+    data_fim = request.args.get('fim', '')
+    tipo = request.args.get('tipo', '')
+    formato = request.args.get('format', 'csv')
+    
+    query = 'SELECT id_laudo, tipo, data, unidade, setor, nome_analista, item_defeito, situacao, descricao_problema FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%"'
+    params = []
+    
+    if data_inicio:
+        query += " AND data >= ?"
+        params.append(data_inicio)
+    if data_fim:
+        query += " AND data <= ?"
+        params.append(data_fim)
+    if tipo:
+        query += " AND tipo = ?"
+        params.append(tipo)
+        
+    query += " ORDER BY data DESC"
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]
+    conn.close()
+    
+    from flask import Response
+    
+    if formato == 'excel':
+        import openpyxl
+        from openpyxl.utils import get_column_letter
+        
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Relatorio"
+        
+        ws.append(columns)
+        for row in rows:
+            ws.append(row)
+            
+        for col in ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(col[0].column)
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            ws.column_dimensions[column_letter].width = min(adjusted_width, 50)
+            
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name='relatorio_exportacao.xlsx'
+        )
+    else:
+        output = io.StringIO()
+        writer = csv.writer(output, delimiter=';', dialect='excel')
+        writer.writerow(columns)
+        writer.writerows(rows)
+        
+        response = Response(output.getvalue(), content_type='text/csv; charset=utf-8-sig')
+        response.headers['Content-Disposition'] = 'attachment; filename=relatorio_exportacao.csv'
+        return response
 
 @app.route('/api/view-pdf/<path:filename>')
 @role_required(['master', 'suporte', 'viewer', 'admin'])
@@ -673,7 +926,7 @@ def favicon():
 # --- Legacy PDF Management ---
 
 @app.route('/api/legacy-pdfs', methods=['GET'])
-@role_required(['master', 'suporte', 'viewer'])
+@role_required(['master', 'suporte', 'viewer', 'admin'])
 def list_legacy_pdfs():
     """Lists all PDFs in the 'Laudos antigos' folder."""
     if not os.path.exists(LEGACY_DIR):
@@ -689,7 +942,7 @@ def list_legacy_pdfs():
     return jsonify({'success': True, 'files': files})
 
 @app.route('/api/legacy-pdfs/<path:filename>', methods=['DELETE'])
-@role_required('master')
+@role_required(['master', 'admin'])
 def delete_legacy_pdf(filename):
     """Permanently deletes a PDF from the 'Laudos antigos' folder."""
     # Security: ensure no path traversal
@@ -703,7 +956,7 @@ def delete_legacy_pdf(filename):
     return jsonify({'success': True})
 
 @app.route('/api/view-legacy-pdf/<path:filename>')
-@role_required(['master', 'suporte', 'viewer'])
+@role_required(['master', 'suporte', 'viewer', 'admin'])
 def view_legacy_pdf_direct(filename):
     """Directly serves a PDF from the 'Laudos antigos' folder."""
     safe_name = os.path.basename(filename)
@@ -809,6 +1062,108 @@ def update_setting():
     conn.commit()
     conn.close()
     return jsonify({'success': True})
+
+@app.route('/api/backup-now', methods=['POST'])
+@role_required(['master', 'admin'])
+def backup_now():
+    """Executa backup imediato dos laudos para a rede"""
+    try:
+        success, message, files_count = perform_backup()
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'files_count': files_count,
+                'message': message
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': message
+            }), 400
+        
+    except Exception as e:
+        print(f'Erro ao fazer backup: {str(e)}')
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao fazer backup: {str(e)}'
+        }), 500
+
+
+@app.route('/api/backup-schedule', methods=['POST', 'GET'])
+@role_required(['master', 'admin'])
+def backup_schedule():
+    """Ativa/desativa ou retorna status do agendamento automático de backup"""
+    try:
+        # GET: Retornar status atual
+        if request.method == 'GET':
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            
+            cursor.execute('SELECT value FROM settings WHERE key = "auto_backup_enabled"')
+            row = cursor.fetchone()
+            enabled = row[0] if row else '0'
+            enabled = enabled == '1'
+            
+            cursor.execute('SELECT value FROM settings WHERE key = "last_backup"')
+            row = cursor.fetchone()
+            last_backup = row[0] if row else None
+            
+            conn.close()
+            
+            # Calcular próxima execução
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            next_run = now.replace(hour=20, minute=0, second=0, microsecond=0)
+            
+            if next_run <= now:
+                next_run += timedelta(days=1)
+            
+            return jsonify({
+                'success': True,
+                'enabled': enabled,
+                'last_backup': last_backup,
+                'next_run': next_run.isoformat() if enabled else None
+            })
+        
+        # POST: Atualizar configuração
+        data = request.get_json()
+        enabled = data.get('enabled', False)
+        
+        # Atualizar database
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+                      ('auto_backup_enabled', '1' if enabled else '0'))
+        conn.commit()
+        conn.close()
+        
+        print(f'[BACKUP] Auto-backup {"ativado" if enabled else "desativado"}')
+        
+        # Reconfigurar scheduler
+        setup_backup_scheduler()
+        
+        # Calcular próxima execução
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        next_run = now.replace(hour=20, minute=0, second=0, microsecond=0)
+        
+        if next_run <= now:
+            next_run += timedelta(days=1)
+        
+        return jsonify({
+            'success': True,
+            'enabled': enabled,
+            'next_run': next_run.isoformat() if enabled else None,
+            'message': f'Agendamento de backup {"ativado" if enabled else "desativado"}'
+        })
+        
+    except Exception as e:
+        print(f'[BACKUP] Erro ao configurar agendamento: {str(e)}')
+        return jsonify({
+            'success': False,
+            'message': f'Erro ao configurar agendamento: {str(e)}'
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

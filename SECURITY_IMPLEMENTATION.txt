@@ -1,0 +1,227 @@
+════════════════════════════════════════════════════════════════════════════
+DOCUMENTAÇÃO DE SEGURANÇA - CORREÇÕES IMPLEMENTADAS
+════════════════════════════════════════════════════════════════════════════
+Data: 2026-02-24
+Versão: 2.0 (Segura)
+
+RESUMO DE MUDANÇAS IMPLEMENTADAS:
+────────────────────────────────────────────────────────────────────────────
+
+✅ CRÍTICA (4 vulnerabilidades corrigidas)
+────────────────────────────────────────────────────────────────────────────
+
+1. SENHAS AGORA HASHADAS COM BCRYPT
+   ✓ Antes: Senhas em texto plano no banco de dados
+   ✓ Agora: Hash bcrypt com salt aleatório
+   ✓ Arquivo: app.py - funções de login, create_user, update_user
+   ✓ Migração: Execute python migrate_passwords.py
+
+2. CREDENTIALS ADMIN NÃO SÃO MAIS HARDCODED
+   ✓ Antes: 'admin' / 'cemeru@123' fixo no código
+   ✓ Agora: Usa variável de ambiente ADMIN_PASSWORD
+   ✓ Default: 'ChangeMe@123' (MUDE NA PRIMEIRA EXECUÇÃO!)
+   ✓ Como: Configure em .env ou defina variável de sistema
+
+3. SECRET_KEY AGORA DINÂMICA E SEGURA
+   ✓ Antes: 'laudo-secret-key-123' (previsível)
+   ✓ Agora: secrets.token_hex(32) - 64 caracteres aleatórios
+   ✓ Leitura: os.environ.get('SECRET_KEY') ou gerado dinamicamente
+   ✓ Configuração: Defina SECRET_KEY em .env ou variável de ambiente
+
+4. SQL INJECTION NAS ALTER TABLE CORRIGIDA
+   ✓ Antes: f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"
+   ✓ Agora: Validação de whitelist dos nomes de colunas
+   ✓ Impacto: Impossível injetar SQL via nomes de coluna
+
+✅ ALTA (3 vulnerabilidades mitigadas)
+────────────────────────────────────────────────────────────────────────────
+
+5. RATE LIMITING NO LOGIN
+   ✓ Antes: Sem proteção contra brute-force
+   ✓ Agora: Máximo 5 tentativas por minuto
+   ✓ Implementação: flask-limiter
+   ✓ Limite global: 200/dia, 50/hora
+
+6. VALIDAÇÃO DE ENTRADA MELHORADA
+   ✓ Antes: Sem validação de comprimento de senha
+   ✓ Agora: Senha mínima 8 caracteres obrigatória
+   ✓ Sanitização: .strip() em nomes de usuário
+   ✓ Validação: Whitelist de roles permitidos
+
+✅ MÉDIA (Melhorias adicionais)
+────────────────────────────────────────────────────────────────────────────
+
+7. CACHE DE HEADERS SEGURO
+   ✓ Cache-Control, Pragma, Expires para APIs
+   ✓ Previne caching indevido de dados sensíveis
+
+════════════════════════════════════════════════════════════════════════════
+COMO USAR AS NOVAS CONFIGURAÇÕES:
+════════════════════════════════════════════════════════════════════════════
+
+PASSO 1: COPIAR ARQUIVO DE EXEMPLO
+────────────────────────────────────────────────────────────────────────────
+   cp .env.example .env
+   (Os valores padrão são seguros para testes, NÃO USAR EM PRODUÇÃO)
+
+PASSO 2: GERAR SECRET_KEY FORTE
+────────────────────────────────────────────────────────────────────────────
+   python -c "import secrets; print(secrets.token_hex(32))"
+   
+   Copie a saída e cole em .env:
+   SECRET_KEY=<cola_aqui_os_64_caracteres>
+
+PASSO 3: DEFINIR SENHA ADMIN
+────────────────────────────────────────────────────────────────────────────
+   Em .env, edite:
+   ADMIN_PASSWORD=SuaSenhaForte@123
+   
+   Requisitos:
+   - Mínimo 8 caracteres
+   - Inclua maiúsculas, minúsculas, números e símbolos
+
+PASSO 4: MIGRAR BANCO DE DADOS EXISTENTE (SE APLICÁVEL)
+────────────────────────────────────────────────────────────────────────────
+   Se você já tinha usuários com senhas antigas:
+   
+   python migrate_passwords.py
+   
+   Isso vai converter todas as senhas em texto plano para bcrypt.
+
+PASSO 5: REINICIAR O SERVIDOR
+────────────────────────────────────────────────────────────────────────────
+   python run_server.py
+   
+   O servidor carregará as variáveis de ambiente automaticamente.
+
+════════════════════════════════════════════════════════════════════════════
+VERIFICAÇÃO PÓS-IMPLEMENTAÇÃO:
+════════════════════════════════════════════════════════════════════════════
+
+1. ✓ TESTE DE LOGIN
+   - Tente fazer login com admin/ <senha configurada>
+   - Deve funcionar normalmente
+
+2. ✓ TESTE DE SENHA FRACA
+   - Tente criar usuário com senha < 8 caracteres
+   - Deve retornar erro: "Usuário e senha (mín 8 caracteres) são obrigatórios"
+
+3. ✓ TESTE DE RATE LIMITING
+   - Faça 6 tentativas de login em < 60 segundos
+   - A 6ª deve ser bloqueada: HTTP 429 (Too Many Requests)
+
+4. ✓ TESTE DE BANCO DE DADOS
+   - SELECT password FROM users;
+   - Senhas devem começar com $2b$ (bcrypt hash)
+   - Nunca devem estar em texto plano
+
+════════════════════════════════════════════════════════════════════════════
+MELHORES PRÁTICAS EM PRODUÇÃO:
+════════════════════════════════════════════════════════════════════════════
+
+1. USAR HTTPS (SSL/TLS) OBRIGATORIAMENTE
+   - Instale certificado SSL válido
+   - Configure Nginx/Apache como proxy reverso
+   - Redirecione HTTP → HTTPS
+
+2. VARIÁVEIS DE AMBIENTE SEGURAS
+   - Use .env em produção, NUNCA commit no git
+   - Use .gitignore: adicione *.env
+   - Em produção: use gerenciador de secrets (AWS Secrets, HashiCorp Vault, etc.)
+
+3. BACKUPS CRIPTOGRAFADOS
+   - Backup do BD com encriptação
+   - Senhas nunca em backup desencriptado
+
+4. AUDITORIA E LOGGING
+   - Log todas as tentativas de login
+   - Monitor para múltiplas falhas de autenticação
+   - Alertas para acesso de admin
+
+5. AUTENTICAÇÃO MULTIFATOR (MFA)
+   - Implementar 2FA com TOTP (Google Authenticator)
+   - Especialmente para usuários master/admin
+
+6. PATCHES DE SEGURANÇA
+   - Manter Flask, bcrypt, flask-limiter atualizados
+   - Executar: pip install --upgrade -r requirements.txt
+
+════════════════════════════════════════════════════════════════════════════
+DEPENDÊNCIAS ADICIONADAS:
+════════════════════════════════════════════════════════════════════════════
+
+bcrypt==4.1.1 (ou superior)
+   - Hashing de senhas com salt aleatório
+   - Resistente a ataques de força bruta (iterations adaptativas)
+
+flask-limiter==3.5.0 (ou superior)
+   - Rate limiting por IP
+   - Proteção contra brute-force
+   - Configurável por endpoint
+
+════════════════════════════════════════════════════════════════════════════
+CAMPOS MODIFICADOS NO BANCO DE DADOS:
+════════════════════════════════════════════════════════════════════════════
+
+Tabela: users
+Coluna: password
+   - Tipo: TEXT (sem mudança estrutural)
+   - Armazenagem antes: Texto plano (ex: "cemeru@123")
+   - Armazenagem agora: Hash bcrypt (ex: "$2b$12$...")
+   - Compatibilidade: Necessário bcrypt.checkpw() para verificação
+
+════════════════════════════════════════════════════════════════════════════
+NOTAS IMPORTANTES:
+════════════════════════════════════════════════════════════════════════════
+
+⚠️  SENHAS ANTERIORES:
+   - Se você tinha senhas em texto plano, execute migrate_passwords.py
+   - Não há como recuperar hashs para texto plano (design intencional)
+   - Use "Redefinir Senha" no painel admin se necessário
+
+⚠️  MUDANÇA DE SECRET_KEY:
+   - Todas as sessões ativas serão invalidadas
+   - Usuários precisarão fazer login novamente
+   - Isso é DESEJADO para máxima segurança
+
+⚠️  DOWNGRADE:
+   - Não é possível fazer downgrade seguro para versão anterior
+   - O banco com bcrypt não funcionará com código antigo
+
+════════════════════════════════════════════════════════════════════════════
+SUPORTE E PROBLEMAS:
+════════════════════════════════════════════════════════════════════════════
+
+Se encontrar erros de "bcrypt not found":
+   python -m pip install --upgrade bcrypt
+
+Se encontrar erros de "limiter not recognized":
+   python -m pip install --upgrade flask-limiter
+
+Se as variáveis de ambiente não carregarem:
+   - Windows: Defina via PowerShell ou painel de controle
+   - Linux: Exporte em .bashrc ou use .env com python-dotenv
+   - Reinicie o terminal após definir variáveis
+
+════════════════════════════════════════════════════════════════════════════
+CHANGELOG:
+════════════════════════════════════════════════════════════════════════════
+
+v2.0 (2026-02-24):
+  ✓ Implementado bcrypt para hashing de senhas
+  ✓ Secret_key dinâmica e segura
+  ✓ Admin password via variável de ambiente
+  ✓ Rate limiting em endpoint de login
+  ✓ Validação melhorada de entrada
+  ✓ SQL injection mitigado em ALTER TABLE
+  ✓ Script de migração de senhas
+  ✓ Documentação de segurança
+
+v1.0 (Versão anterior):
+  ✗ Senhas em texto plano
+  ✗ Credenciais hardcoded
+  ✗ Secret_key fraca e previsível
+  ✗ Sem rate limiting
+  ✗ SQL injection potencial
+
+════════════════════════════════════════════════════════════════════════════

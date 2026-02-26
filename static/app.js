@@ -11,7 +11,8 @@ let activeTasyInput = null; // The input that triggered the dropdown
 let currentUser = {
   username: '',
   role: '',
-  fullName: ''
+  fullName: '',
+  requires_password_change: false
 };
 let visibleColumns = new Set(['data', 'tipo', 'unidade', 'item_defeito']);
 let selectedListCategory = 'unidades';
@@ -58,6 +59,9 @@ function addEquipamento(prefill = null) {
   equipCount++;
   const container = document.getElementById('equipamentos-container');
 
+  // Exit if we're not on a page with equipment container (e.g., config page)
+  if (!container) return;
+
   // Remove empty state if present
   const empty = container.querySelector('.empty-equip');
   if (empty) empty.remove();
@@ -93,7 +97,7 @@ function addEquipamento(prefill = null) {
             oninput="onTasyInput(this)"
             onfocus="onTasyFocus(this)"
             onblur="onTasyBlur(this)" />
-          <button class="tasy-search-btn" title="Buscar no Tasy" onclick="openTasyForInput(this)">🔍</button>
+          <button class="tasy-search-btn" title="Buscar no Tasy" onclick="openTasyForInput(this)">Buscar</button>
         </div>
       </div>
 
@@ -315,7 +319,8 @@ async function handleAddNewOption() {
 }
 
 function hideCustomDropdown() {
-  document.getElementById('customDropdown').classList.add('hidden');
+  const dropdown = document.getElementById('customDropdown');
+  if (dropdown) dropdown.classList.add('hidden');
 }
 
 // Close dropdowns on click outside
@@ -491,7 +496,9 @@ function selectTasyItem(idx) {
 }
 
 function hideDropdown() {
-  document.getElementById('tasyDropdown').classList.add('hidden');
+  const dd = document.getElementById('tasyDropdown');
+  if (dd) dd.classList.add('hidden');
+  activeTasyInput = null;
 }
 
 
@@ -554,21 +561,29 @@ function updateNavActive(activeId) {
  */
 function gotoGenerator() {
   hideAllPages();
-  document.getElementById('mainGenerator').classList.remove('hidden');
+  const mainGen = document.getElementById('mainGenerator');
+  if (mainGen) mainGen.classList.remove('hidden');
   setAppMode('laudo');
   updateNavActive('btnNavGen');
 }
 
 function gotoPurchaseMode() {
   hideAllPages();
-  document.getElementById('mainGenerator').classList.remove('hidden');
+  const mainGen = document.getElementById('mainGenerator');
+  if (mainGen) mainGen.classList.remove('hidden');
   setAppMode('purchase');
   updateNavActive('btnNavPurchase');
 }
 
 async function toggleDashboard() {
   const dash = document.getElementById('dashboardPage');
+  if (!dash) {
+    console.warn('Dashboard page element not found');
+    return;
+  }
+
   if (!dash.classList.contains('hidden')) {
+    if (currentUser && currentUser.role === 'viewer') return;
     gotoGenerator();
     return;
   }
@@ -593,29 +608,33 @@ async function toggleDashboard() {
 }
 
 async function toggleConfig() {
-  const config = document.getElementById('configPage');
-  if (!config.classList.contains('hidden')) {
-    gotoGenerator();
-    return;
-  }
+  try {
+    // Check authentication first
+    const ok = await checkServerAuth();
+    if (!ok) {
+      window.location.href = '/';
+      return;
+    }
 
-  hideAllPages();
-  config.classList.remove('hidden');
-  updateNavActive('btnNavConfig');
-
-  const ok = await checkServerAuth();
-  if (ok) {
-    showConfigMain();
-    applyRbacUI();
-  } else {
-    showConfigLogin();
+    // Redirect to config page
+    window.location.href = '/config';
+  } catch (err) {
+    alert("Erro crítico em toggleConfig: " + err.message);
+    console.error(err);
   }
 }
 
 function hideAllPages() {
-  document.getElementById('mainGenerator').classList.add('hidden');
-  document.getElementById('dashboardPage').classList.add('hidden');
-  document.getElementById('configPage').classList.add('hidden');
+  const mainGen = document.getElementById('mainGenerator');
+  if (mainGen) mainGen.classList.add('hidden');
+  const dashPage = document.getElementById('dashboardPage');
+  if (dashPage) dashPage.classList.add('hidden');
+  const cfgPage = document.getElementById('configPage');
+  if (cfgPage) cfgPage.classList.add('hidden');
+  const legacyOnly = document.getElementById('legacyOnlyPage');
+  if (legacyOnly) legacyOnly.classList.add('hidden');
+  const viewerDashboard = document.getElementById('viewerDashboardPage');
+  if (viewerDashboard) viewerDashboard.classList.add('hidden');
 }
 
 /**
@@ -633,13 +652,72 @@ function applyRbacUI() {
   const btnGen = document.getElementById('btnNavGen');
   if (btnGen) btnGen.classList.toggle('hidden', isViewer);
 
+  const btnNavDashboard = document.getElementById('btnNavDashboard');
+  if (btnNavDashboard) btnNavDashboard.classList.toggle('hidden', isViewer);
+
   // Purchase Nav
   const btnPurchase = document.getElementById('btnNavPurchase');
   if (btnPurchase) btnPurchase.classList.toggle('hidden', isViewer);
 
-  // Config Nav
+  // Config Nav - Viewers NEED to see configs to see legacy laudos
   const btnConfig = document.getElementById('btnNavConfig');
-  if (btnConfig) btnConfig.classList.toggle('hidden', isViewer);
+  if (btnConfig) {
+    btnConfig.classList.toggle('hidden', isViewer);
+    if (isViewer) {
+      btnConfig.textContent = 'Consultas';
+      btnConfig.title = "Consultas e Laudos Antigos";
+    } else {
+      btnConfig.textContent = 'Configurações';
+      btnConfig.title = "Configurações e Consultas";
+    }
+  }
+
+  // Hide the back-to-generator buttons for viewers
+  const btnBackDash = document.getElementById('btnBackDashboard');
+  if (btnBackDash) btnBackDash.classList.toggle('hidden', isViewer);
+
+  const btnBackCfg = document.getElementById('btnBackConfig');
+  if (btnBackCfg) btnBackCfg.classList.toggle('hidden', isViewer);
+
+  // Exclusively for viewers: Make full-screen dashboard and config pages render as relative inline
+  // so the main top navigation always remains accessible, without altering the Master layout.
+  const dashPage = document.getElementById('dashboardPage');
+  const cfgPage = document.getElementById('configPage');
+  if (dashPage || cfgPage) {
+    if (isViewer) {
+      if (dashPage) {
+        dashPage.style.position = 'relative';
+        dashPage.style.zIndex = 'auto';
+      }
+      if (cfgPage) {
+        cfgPage.style.position = 'relative';
+        cfgPage.style.zIndex = 'auto';
+      }
+      // Also hide the duplicate Sair buttons in the overlay headers since global header is visible
+      document.querySelectorAll('.dashboard-header .btn-secondary').forEach(b => b.style.display = 'none');
+    } else {
+      if (dashPage) {
+        dashPage.style.position = '';
+        dashPage.style.zIndex = '';
+      }
+      if (cfgPage) {
+        cfgPage.style.position = '';
+        cfgPage.style.zIndex = '';
+      }
+      document.querySelectorAll('.dashboard-header .btn-secondary').forEach(b => b.style.display = '');
+    }
+  }
+
+  // Hide the "Listas" section in configurations for viewers
+  const groupListsLabel = document.getElementById('groupListsLabel');
+  if (groupListsLabel) groupListsLabel.classList.toggle('hidden', isViewer);
+
+  // Completely hide the configuration sidebar for viewers to allow the Legacy View to go full-width
+  const cfgSidebar = document.querySelector('.lists-sidebar');
+  if (cfgSidebar) cfgSidebar.classList.toggle('hidden', isViewer);
+
+  const listsNav = document.getElementById('lists_categories_nav');
+  if (listsNav) listsNav.classList.toggle('hidden', isViewer);
 
   // Generate button
   const btnGerar = document.getElementById('btnGerar');
@@ -650,7 +728,22 @@ function applyRbacUI() {
   if (btnCatUsers) btnCatUsers.classList.toggle('hidden', !canManageUsers);
 
   const btnCatBackup = document.getElementById('btnCatBackup');
-  if (btnCatBackup) btnCatBackup.classList.toggle('hidden', !isMaster);
+  if (btnCatBackup) btnCatBackup.classList.toggle('hidden', !canManageUsers);
+
+  const btnCatProfile = document.getElementById('btnCatProfile');
+  if (btnCatProfile) btnCatProfile.classList.toggle('hidden', false); // Profile visible for all non-viewers
+
+  // Hide entire Admin Section for viewers
+  const adminSectionConfig = document.getElementById('adminSectionConfig');
+  if (adminSectionConfig) adminSectionConfig.classList.toggle('hidden', isViewer);
+
+  // Hide System Data Section for non-admin/master
+  const systemDataSection = document.getElementById('systemDataSection');
+  if (systemDataSection) systemDataSection.classList.toggle('hidden', !canManageUsers);
+
+  // Hide Manage Laudos Section for viewers
+  const manageLaudosSection = document.getElementById('manageLaudosSection');
+  if (manageLaudosSection) manageLaudosSection.classList.toggle('hidden', isViewer);
 
   // Management actions
   document.querySelectorAll('.btn-action.btn-delete, .btn-action[onclick*="toggleTest"]').forEach(btn => {
@@ -724,12 +817,16 @@ async function onAfterLogin() {
     dataInput.value = today.toISOString().split('T')[0];
   }
 
-  // Load backend data ONLY after auth
-  await loadTasyData();
-  await populateFormOptions();
+  // Only load data if we're on the main page (has equipamentos-container)
+  const container = document.getElementById('equipamentos-container');
+  if (container) {
+    // Load backend data ONLY after auth
+    await loadTasyData();
+    await populateFormOptions();
 
-  if (equipCount === 0) addEquipamento();
-  fetchNextLaudoNum();
+    if (equipCount === 0) addEquipamento();
+    fetchNextLaudoNum();
+  }
 }
 
 /**
@@ -754,6 +851,7 @@ async function checkServerAuth() {
         currentUser.username = me.username || '';
         currentUser.role = me.role || '';
         currentUser.fullName = me.full_name || '';
+        currentUser.requires_password_change = me.requires_password_change || false;
         return true;
       }
     }
@@ -768,19 +866,67 @@ async function checkServerAuth() {
  * Called after a successful login
  */
 function onLoginSuccess() {
-  document.getElementById('globalLoginSection').classList.add('hidden');
-  document.getElementById('appContent').classList.remove('hidden');
+  const loginSec = document.getElementById('globalLoginSection');
+  const appCont = document.getElementById('appContent');
+  if (loginSec) loginSec.classList.add('hidden');
+  if (appCont) appCont.classList.remove('hidden');
 
   const nameDisp = document.getElementById('userNameDisplay');
   const roleDisp = document.getElementById('userRoleDisplay');
   if (nameDisp) nameDisp.textContent = currentUser.fullName || currentUser.username || 'Usuário';
   if (roleDisp) roleDisp.textContent = currentUser.role || '';
 
-  applyRbacUI();
-  onAfterLogin();
-  
+  if (currentUser.requires_password_change) {
+    const pwModal = document.getElementById('passwordResetModal');
+    if (pwModal) pwModal.classList.remove('hidden');
+    return;
+  }
+
   if (currentUser.role === 'viewer') {
-    toggleDashboard();
+    try { window.location.href = '/viewer'; } catch (e) { }
+    return;
+  }
+
+  applyRbacUI();
+  awaitOnAfterLogin();
+}
+
+// helper to call onAfterLogin without blocking or causing unhandled promise rejections
+function awaitOnAfterLogin() {
+  onAfterLogin().catch(err => console.error('onAfterLogin failed:', err));
+}
+
+async function handlePasswordReset() {
+  const password = document.getElementById('resetPassword').value;
+  const confirmPassword = document.getElementById('resetConfirmPassword').value;
+
+  if (!password || !confirmPassword) {
+    showToast('Por favor, preencha todos os campos.', 'error');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showToast('As senhas não coincidem.', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Senha alterada com sucesso!', 'success');
+      document.getElementById('passwordResetModal').classList.add('hidden');
+      currentUser.requires_password_change = false;
+      onLoginSuccess();
+    } else {
+      showToast(data.error || 'Erro ao alterar a senha.', 'error');
+    }
+  } catch (err) {
+    showToast('Erro de conexão.', 'error');
   }
 }
 
@@ -790,7 +936,6 @@ function onLoginSuccess() {
 async function fetchNextLaudoNum() {
   const laudoInput = document.getElementById('id_laudo');
   if (!laudoInput) return;
-
   try {
     const res = await fetch('/api/next-laudo-num');
     const data = await res.json();
@@ -831,6 +976,7 @@ async function gerarLaudo() {
 
   const data = document.getElementById('data').value.trim();
   const descricaoProblema = document.getElementById('descricao_problema')?.value?.trim() || "";
+  const chamado = document.getElementById('chamado')?.value?.trim() || "";
 
   const equipamentos = getEquipamentos();
   if (!equipamentos.length) {
@@ -858,6 +1004,7 @@ async function gerarLaudo() {
     nome_analista: document.getElementById('nome_analista').value.trim(),
     cargo_analista: document.getElementById('cargo_analista').value.trim(),
     descricao_problema: isPurchaseMode ? "" : descricaoProblema,
+    chamado: chamado,
     tipo: isPurchaseMode ? 'compra' : 'laudo',
     is_test: document.getElementById('is_test')?.checked || false,
     verificacao_url: `${isPurchaseMode ? 'Solicitação de Compra' : 'Laudo Técnico'} Nº ${idLaudo} | Data: ${dataFormatada} | Autenticidade confirmada pelo setor de TI`,
@@ -883,7 +1030,7 @@ async function gerarLaudo() {
     }
 
     const filename = dataRes.filename;
-    
+
     showPostGenModal(filename, isPurchaseMode ? "Solicitação criada com sucesso!" : "Documento criado com sucesso!");
     fetchNextLaudoNum();
   } catch (err) {
@@ -899,35 +1046,35 @@ function showPostGenModal(filename, msg) {
   generatedFilename = filename;
   const msgEl = document.getElementById('postGenMessage');
   if (msgEl) msgEl.textContent = msg;
-  
+
   const btnVis = document.getElementById('btnPostGenVisualizar');
   const btnBx = document.getElementById('btnPostGenBaixar');
-  
+
   btnVis.onclick = () => {
     closePostGenModal();
     const frame = document.getElementById('pdfModalFrame');
     if (frame) frame.src = `/api/view-pdf/${encodeURIComponent(filename)}`;
     document.getElementById('pdfViewerModal').classList.remove('hidden');
   };
-  
+
   btnBx.onclick = () => {
     window.location.href = `/api/view-pdf/${encodeURIComponent(filename)}?download=1`;
   };
-  
+
   document.getElementById('postGenModal').classList.remove('hidden');
 }
 
 function closePostGenModal() {
   document.getElementById('postGenModal').classList.add('hidden');
   if (document.getElementById('is_test') && !document.getElementById('is_test').checked) {
-      const equipCont = document.getElementById('equipamentos-container');
-      if (equipCont) {
-        equipCont.innerHTML = '';
-        equipCount = 0;
-        addEquipamento();
-      }
-      const descProb = document.getElementById('descricao_problema');
-      if (descProb) descProb.value = '';
+    const equipCont = document.getElementById('equipamentos-container');
+    if (equipCont) {
+      equipCont.innerHTML = '';
+      equipCount = 0;
+      addEquipamento();
+    }
+    const descProb = document.getElementById('descricao_problema');
+    if (descProb) descProb.value = '';
   }
 }
 
@@ -1009,9 +1156,13 @@ async function renderListManagement() {
 }
 
 async function selectListCategory(cat) {
+  // Exit if not on config page
+  const view = document.getElementById('listManagementView');
+  if (!view) return;
+
   selectedListCategory = cat;
   hideAllConfigViews();
-  document.getElementById('listManagementView').classList.remove('hidden');
+  view.classList.remove('hidden');
 
   // Update UI active state
   document.querySelectorAll('.list-cat-btn').forEach(btn => btn.classList.remove('active'));
@@ -1021,7 +1172,12 @@ async function selectListCategory(cat) {
   // Show/hide panels
   _showConfigPanel('listManagementView');
 
-  renderListManagement();
+  try {
+    await renderListManagement();
+  } catch (err) {
+    console.error("Erro ao renderizar lista:", err);
+    showToast('Erro ao carreggar configurações', 'error');
+  }
 }
 
 function showBackupSettings() {
@@ -1039,10 +1195,15 @@ function showManageView() {
 }
 
 function showLegacyView() {
-  document.querySelectorAll('.list-cat-btn').forEach(btn => btn.classList.remove('active'));
-  document.getElementById('btnCatLegacy').classList.add('active');
-  _showConfigPanel('legacyPdfsView');
-  fetchLegacyPdfs();
+  try {
+    document.querySelectorAll('.list-cat-btn').forEach(btn => btn.classList.remove('active'));
+    const btnLegacy = document.getElementById('btnCatLegacy');
+    if (btnLegacy) btnLegacy.classList.add('active');
+    _showConfigPanel('legacyPdfsView');
+    fetchLegacyPdfs();
+  } catch (err) {
+    alert('Erro em showLegacyView: ' + err.message);
+  }
 }
 
 /** Hides all config panels and shows the given one */
@@ -1057,6 +1218,8 @@ function _showConfigPanel(id) {
   });
   const target = document.getElementById(id);
   if (target) target.classList.remove('hidden');
+  // always scroll panel into view so user doesn't have to scroll down
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function addNewListItem() {
@@ -1161,6 +1324,44 @@ async function loadNetworkPath() {
   }
 }
 
+async function triggerBackupNow() {
+  const statusDiv = document.getElementById('backupStatus');
+  if (!statusDiv) return;
+
+  statusDiv.textContent = 'Iniciando backup...';
+  statusDiv.style.color = 'var(--info)';
+
+  try {
+    const response = await fetch('/api/backup-now', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await response.json();
+
+    if (data.success) {
+      statusDiv.textContent = `Backup concluído: ${data.files_count} arquivos copiados`;
+      statusDiv.style.color = 'var(--success)';
+      showToast('Backup executado com sucesso!', 'success');
+
+      // Atualizar histórico
+      const historyDiv = document.getElementById('backupHistory');
+      if (historyDiv) {
+        const now = new Date().toLocaleString('pt-BR');
+        historyDiv.innerHTML = `<p>Último backup: ${now}</p><p>Total de arquivos: ${data.files_count}</p>`;
+      }
+    } else {
+      statusDiv.textContent = `Erro: ${data.message}`;
+      statusDiv.style.color = 'var(--danger)';
+      showToast(data.message || 'Erro ao executar backup', 'error');
+    }
+  } catch (err) {
+    console.error('Erro ao fazer backup:', err);
+    statusDiv.textContent = 'Erro ao conectar com servidor';
+    statusDiv.style.color = 'var(--danger)';
+    showToast('Erro ao executar backup', 'error');
+  }
+}
+
 async function saveNetworkPath() {
   const input = document.getElementById('networkPathInput');
   const val = input.value.trim();
@@ -1196,7 +1397,8 @@ async function populateFormOptions() {
   }
 
   // Also load settings if in config mode
-  if (!document.getElementById('configPage').classList.contains('hidden')) {
+  const cfgPage = document.getElementById('configPage');
+  if (cfgPage && !cfgPage.classList.contains('hidden')) {
     await loadNetworkPath();
   }
 }
@@ -1226,29 +1428,39 @@ function showConfigLogin() {
 }
 
 function showConfigMain() {
-  document.getElementById('configLoginSection').classList.add('hidden');
-  document.getElementById('configMainSection').classList.remove('hidden');
+  try {
+    document.getElementById('configLoginSection').classList.add('hidden');
+    document.getElementById('configMainSection').classList.remove('hidden');
 
-  const activeBtn = document.querySelector('.list-cat-btn.active');
-  if (!activeBtn) {
-    selectListCategory('unidades');
-    return;
-  }
+    if (currentUser && currentUser.role === 'viewer') {
+      // Viewers only need to see the Legacy Pdfs. We route them directly here and bypass the sidebar.
+      showLegacyView();
+      return;
+    }
 
-  // Refresh current view based on active sidebar button
-  if (activeBtn.id === 'btnCatUsers') {
-    fetchUsers();
-  } else if (activeBtn.id === 'btnCatProfile') {
-    showProfileView();
-  } else if (activeBtn.id === 'btnCatManage') {
-    showManageView();
-  } else if (activeBtn.id === 'btnCatLegacy') {
-    showLegacyView();
-  } else if (activeBtn.id === 'btnCatBackup') {
-    showBackupSettings();
-  } else {
-    // If it's a list category
-    renderListManagement();
+    const activeBtn = document.querySelector('.list-cat-btn.active');
+    if (!activeBtn) {
+      selectListCategory('unidades');
+      return;
+    }
+
+    // Refresh current view based on active sidebar button
+    if (activeBtn.id === 'btnCatUsers') {
+      fetchUsers();
+    } else if (activeBtn.id === 'btnCatProfile') {
+      showProfileView();
+    } else if (activeBtn.id === 'btnCatManage') {
+      showManageView();
+    } else if (activeBtn.id === 'btnCatLegacy') {
+      showLegacyView();
+    } else if (activeBtn.id === 'btnCatBackup') {
+      showBackupSettings();
+    } else {
+      // If it's a list category
+      renderListManagement();
+    }
+  } catch (err) {
+    alert("Erro em showConfigMain: " + err.message);
   }
 }
 
@@ -1298,7 +1510,7 @@ function renderUsersTable(users) {
   }
 
   const canDelete = currentUser.role === 'master';
-  
+
   tbody.innerHTML = users.map(u => {
     const isTargetMaster = u.role === 'master';
     const statusClass = u.is_active ? 'active' : 'inactive';
@@ -1337,7 +1549,7 @@ function renderUsersTable(users) {
             </button>
             ${(canDelete && !isTargetMaster) ? `
               <button class="btn-del-small" onclick="deleteUser(${u.id})" title="Excluir Usuário">
-                <span>🗑️</span>
+                <span>Excluir</span>
               </button>
             ` : ''}
           </div>
@@ -1518,11 +1730,30 @@ async function handleLogout() {
 
 let chartInstances = {};
 
-async function fetchStats() {
+async function fetchStats(isViewer = false) {
   try {
     const res = await fetch('/api/stats');
     const data = await res.json();
     if (data.success) {
+      if (isViewer) {
+        const recentBody = document.getElementById('viewer_recent_laudos_body');
+        recentBody.innerHTML = data.recent.map(r => {
+          const safeId = r[0].replace(/\//g, '_');
+          const pdfUrl = `/api/view-pdf/Laudo_${safeId}.pdf`;
+          return `
+                <tr>
+                <td><a href="${pdfUrl}" target="_blank" class="pdf-link" title="Ver PDF" style="font-weight:bold; color:var(--primary);">${r[0]}</a></td>
+                <td>${r[1]}</td>
+                <td>${r[2]}</td>
+                <td>
+                    ${r[5] === 'compra' ? '<span class="status-purchase">COMPRA</span>' : '<small class="status-official">LAUDO</small>'}
+                    ${r[4] ? '<span class="is-test-badge">TESTE</span>' : ''}
+                </td>
+                </tr>
+            `;
+        }).join('');
+        return
+      }
       document.getElementById('stat_total').textContent = data.total;
       document.getElementById('stat_compras').textContent = data.total_compras || 0;
       document.getElementById('stat_units_count').textContent = data.unidades.length;
@@ -1534,9 +1765,12 @@ async function fetchStats() {
       `).join('');
 
       const recentBody = document.getElementById('recent_laudos_body');
-      recentBody.innerHTML = data.recent.map(r => `
+      recentBody.innerHTML = data.recent.map(r => {
+        const safeId = r[0].replace(/\//g, '_');
+        const pdfUrl = `/api/view-pdf/Laudo_${safeId}.pdf`;
+        return `
         <tr>
-          <td>${r[0]}</td>
+          <td><a href="${pdfUrl}" target="_blank" class="pdf-link" title="Ver PDF" style="font-weight:bold; color:var(--primary);">${r[0]}</a></td>
           <td>${r[1]}</td>
           <td>${r[2]}</td>
           <td>
@@ -1544,11 +1778,13 @@ async function fetchStats() {
             ${r[4] ? '<span class="is-test-badge">TESTE</span>' : ''}
           </td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
 
       // Render Charts
-      renderPieChart('chartUnidades', data.unidades.slice(0, 6), 'Unidades');
-      renderPieChart('chartItens', data.itens, 'Equipamentos');
+      if (data.analistas) renderPieChart('chartAnalistas', data.analistas, 'Analistas');
+      if (data.unidades) renderPieChart('chartUnidades', data.unidades.slice(0, 6), 'Unidades');
+      if (data.itens) renderPieChart('chartItens', data.itens, 'Equipamentos');
     }
   } catch (err) {
     console.error('Erro ao buscar stats:', err);
@@ -1573,9 +1809,16 @@ function renderPieChart(canvasId, rawData, label) {
       datasets: [{
         data: values,
         backgroundColor: [
-          '#60a5fa', '#f87171', '#34d399', '#fbbf24', '#a78bfa', '#f472b6', '#94a3b8'
+          'rgba(61, 142, 240, 0.85)', // accent (blue)
+          'rgba(63, 185, 80, 0.85)',  // success (green)
+          'rgba(210, 153, 34, 0.85)', // warning (yellow)
+          'rgba(163, 113, 247, 0.85)',// purple neon
+          'rgba(248, 81, 73, 0.85)',  // danger (red)
+          'rgba(255, 123, 114, 0.85)',// light red
+          'rgba(139, 148, 158, 0.85)' // secondary
         ],
-        borderWidth: 0,
+        borderColor: '#161b22',
+        borderWidth: 2,
         hoverOffset: 10
       }]
     },
@@ -1613,15 +1856,31 @@ async function fetchIncidenceReport() {
       const body = document.getElementById('incidence_report_body');
       body.innerHTML = data.incidences.map(i => `
         <tr>
-          <td>${i[0]}</td>
-          <td>${i[1]}</td>
-          <td><strong>${i[2]}</strong></td>
+          <td style="font-weight: 500; color: var(--text-primary);">${i[0]}</td>
+          <td><span class="status-purchase" style="background: rgba(248, 81, 73, 0.15); color: var(--danger);">${i[1]}</span></td>
+          <td style="font-size: 12px; color: var(--text-secondary); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${i[2] || '-'}">${i[2] || '-'}</td>
         </tr>
       `).join('');
     }
   } catch (err) {
     showToast('Erro ao carregar relatório');
   }
+}
+
+function downloadExport(format) {
+  const dataInicio = document.getElementById('exportDataInicio').value;
+  const dataFim = document.getElementById('exportDataFim').value;
+  const tipo = document.getElementById('exportTipo').value;
+
+  let url = '/api/reports/export?';
+  const params = new URLSearchParams();
+  if (dataInicio) params.append('inicio', dataInicio);
+  if (dataFim) params.append('fim', dataFim);
+  if (tipo) params.append('tipo', tipo);
+  params.append('format', format || 'csv');
+
+  url += params.toString();
+  window.open(url, '_blank');
 }
 
 let allLaudos = [];
@@ -1662,8 +1921,12 @@ function renderManagementTable(data) {
     'item_defeito': 'Equipamento',
     'descricao_problema': 'Descrição',
     'nome_analista': 'Analista',
-    'situacao': 'Situação'
+    'situacao': 'Situação',
+    'chamado': 'Chamado'
   };
+
+  const isViewer = currentUser.role === 'viewer';
+  const isAdmin = currentUser.role === 'master' || currentUser.role === 'admin';
 
   // Always show ID and Actions
   let htmlHead = `<th>ID</th>`;
@@ -1686,6 +1949,16 @@ function renderManagementTable(data) {
 
     visibleColumns.forEach(col => {
       let val = r[col] || '-';
+      if (col === 'data') {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) {
+          val = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        } else if (typeof val === 'string' && val.includes('/')) {
+          const [day, month, year] = val.split('/');
+          const d2 = new Date(`${year}-${month}-${day}`);
+          val = (!isNaN(d2.getTime())) ? d2.toLocaleDateString('pt-BR') : val;
+        }
+      }
       if (col === 'descricao_problema') {
         rowHtml += `<td class="desc-cell">${val.substring(0, 100)}${val.length > 100 ? '...' : ''}</td>`;
       } else if (col === 'tipo') {
@@ -1700,8 +1973,8 @@ function renderManagementTable(data) {
     rowHtml += `
       <td>
         <div style="display: flex; gap: 4px;">
-          <button class="btn-action" onclick="toggleTest(${r.id})" title="Alternar Modo Teste">🧪</button>
-          <button class="btn-action btn-delete" onclick="deleteLaudo(${r.id})" title="Excluir">🗑️</button>
+          ${!isViewer ? `<button class="btn-action-small" onclick="toggleTest(${r.id})" title="Alternar Modo Teste">Teste</button>` : ''}
+          ${isAdmin ? `<button class="btn-action-small btn-delete" onclick="deleteLaudo(${r.id})" title="Excluir">Excluir</button>` : ''}
         </div>
       </td>
     `;
@@ -1715,7 +1988,8 @@ function filterManagementTable() {
     _normalize(r.id_laudo).includes(query) ||
     _normalize(r.unidade).includes(query) ||
     _normalize(r.item_defeito).includes(query) ||
-    _normalize(r.descricao_problema).includes(query)
+    _normalize(r.descricao_problema).includes(query) ||
+    _normalize(r.chamado).includes(query)
   );
   renderManagementTable(filtered);
 }
@@ -1749,9 +2023,75 @@ async function deleteLaudo(id) {
 }
 
 // ============================================================
-// LEGACY PDF VIEWER
+// LEGACY PDF VIEWER (Master/Admin in Config View)
 // ============================================================
 let allLegacyFiles = [];
+
+// ============================================================
+// LEGACY PDF VIEWER (Viewer Dedicated Page)
+// ============================================================
+
+function toggleLegacyOnlyPage() {
+  hideAllPages();
+  const legacyOnly = document.getElementById('legacyOnlyPage');
+  if (legacyOnly) legacyOnly.classList.remove('hidden');
+  updateNavActive('btnNavConfig'); // Highlight the Consultas button
+  fetchLegacyOnlyPdfs();
+}
+
+async function fetchLegacyOnlyPdfs() {
+  const container = document.getElementById('legacyOnlyFileList');
+  if (!container) return;
+  container.innerHTML = '<div class="legacy-loading">Carregando arquivos...</div>';
+
+  try {
+    const res = await fetch('/api/legacy-pdfs');
+    const data = await res.json();
+    if (data.success) {
+      allLegacyFiles = data.files;
+      renderLegacyOnlyList(allLegacyFiles);
+    } else {
+      container.innerHTML = '<div class="legacy-loading">Erro ao carregar arquivos.</div>';
+    }
+  } catch (err) {
+    container.innerHTML = '<div class="legacy-loading">Erro de conexão.</div>';
+  }
+}
+
+function filterLegacyOnlyList() {
+  const q = _normalize(document.getElementById('legacyOnlySearch')?.value || '');
+  const filtered = allLegacyFiles.filter(f => _normalize(f.name).includes(q));
+  renderLegacyOnlyList(filtered);
+}
+
+function renderLegacyOnlyList(files) {
+  const container = document.getElementById('legacyOnlyFileList');
+  if (!container) return;
+
+  if (!files.length) {
+    container.innerHTML = '<div class="legacy-loading">Nenhum arquivo encontrado.</div>';
+    return;
+  }
+
+  container.innerHTML = files.map((f, idx) => {
+    const shortName = f.name.replace(/\.pdf$/i, '');
+    const sizeKb = (f.size / 1024).toFixed(0);
+    const safeName = f.name.replace(/'/g, "\\'");
+    return `
+      <div class="legacy-file-item" data-index="${idx}">
+        <div class="legacy-file-icon">📄</div>
+        <div class="legacy-file-info">
+          <span class="legacy-file-name">${shortName}</span>
+          <span class="legacy-file-meta">${sizeKb} KB</span>
+        </div>
+        <div class="legacy-file-actions">
+          <button class="btn-legacy-view" onclick="openPdfModal('${safeName}')" title="Visualizar PDF">
+            Visualizar Arquivo
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
 
 async function fetchLegacyPdfs() {
   const container = document.getElementById('legacyFileList');
@@ -1793,17 +2133,16 @@ function renderLegacyList(files) {
     const safeName = f.name.replace(/'/g, "\\'");
     return `
       <div class="legacy-file-item" data-index="${idx}">
-        <div class="legacy-file-icon">📄</div>
         <div class="legacy-file-info">
           <span class="legacy-file-name">${shortName}</span>
           <span class="legacy-file-meta">${sizeKb} KB</span>
         </div>
         <div class="legacy-file-actions">
           <button class="btn-legacy-view" onclick="openPdfModal('${safeName}')" title="Visualizar">
-            👁️ Visualizar
+            Visualizar
           </button>
           <button class="btn-legacy-del" onclick="deleteLegacyPdf('${safeName}')" title="Excluir do disco">
-            🗑️
+            Excluir
           </button>
         </div>
       </div>`;
@@ -1845,6 +2184,186 @@ async function deleteLegacyPdf(filename) {
   } catch (err) {
     showToast('Erro de conexão', 'error');
   }
+}
+
+// ============================================================
+// VIEWER DASHBOARD
+// ============================================================
+
+function showViewerDashboard() {
+  hideAllPages();
+  document.getElementById('viewerDashboardPage').classList.remove('hidden');
+  updateNavActive('btnNavDashboard');
+  fetchStats(true);
+  fetchViewerData();
+  fetchViewerLegacyPdfs();
+}
+
+function switchViewerTab(tab) {
+  document.querySelectorAll('#viewerDashboardPage .tab-btn').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.querySelector(`.tab-btn[onclick*="'${tab}'"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  if (tab === 'viewer-main') {
+    document.getElementById('viewerMain').classList.remove('hidden');
+    document.getElementById('viewerLegacy').classList.add('hidden');
+  } else {
+    document.getElementById('viewerMain').classList.add('hidden');
+    document.getElementById('viewerLegacy').classList.remove('hidden');
+  }
+}
+
+async function fetchViewerData() {
+  try {
+    const typeFilter = document.getElementById('viewerTypeFilter')?.value || '';
+    const url = typeFilter ? `/api/laudos?tipo=${typeFilter}` : '/api/laudos';
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.success) {
+      allLaudos = json.data;
+      renderViewerTable(allLaudos);
+    }
+  } catch (err) {
+    showToast('Erro ao carregar dados');
+  }
+}
+
+function renderViewerTable(data) {
+  const theadRow = document.getElementById('viewer_management_thead_row');
+  const body = document.getElementById('viewer_management_table_body');
+
+  const colNames = {
+    'id_laudo': 'ID',
+    'data': 'Data',
+    'tipo': 'Tipo',
+    'unidade': 'Unidade',
+    'item_defeito': 'Equipamento',
+    'descricao_problema': 'Descrição',
+    'nome_analista': 'Analista',
+    'situacao': 'Situação',
+    'chamado': 'Chamado'
+  };
+
+  let visibleCols = ['tipo', 'unidade', 'item_defeito', 'descricao_problema', 'nome_analista', 'situacao', 'chamado'];
+
+  let htmlHead = `<th>ID</th>`;
+  visibleCols.forEach(col => {
+    htmlHead += `<th>${colNames[col] || col}</th>`;
+  });
+  htmlHead += `<th>Ações</th>`;
+  theadRow.innerHTML = htmlHead;
+
+  body.innerHTML = data.map(r => {
+    const safeId = r.id_laudo.replace(/\//g, '_');
+    const pdfUrl = `/api/view-pdf/Laudo_${safeId}.pdf`;
+
+    let rowHtml = `<td>
+      <a href="${pdfUrl}" target="_blank" class="pdf-link" title="Ver PDF">
+        ${r.id_laudo}
+      </a>
+      ${r.is_test ? '<span class="is-test-badge">T</span>' : ''}
+    </td>`;
+
+    visibleCols.forEach(col => {
+      let val = r[col] || '-';
+      if (col === 'data') {
+        if (typeof val === 'string' && val.includes('/')) {
+          const parts = val.split('/');
+          if (parts.length === 3) {
+            const d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            val = (isNaN(d.getTime())) ? val : d.toLocaleDateString('pt-BR');
+          }
+        } else {
+          const d = new Date(val);
+          val = (isNaN(d.getTime())) ? val : d.toLocaleDateString('pt-BR');
+        }
+      }
+      if (col === 'descricao_problema') {
+        rowHtml += `<td class="desc-cell">${val.substring(0, 100)}${val.length > 100 ? '...' : ''}</td>`;
+      } else if (col === 'tipo') {
+        const typeLabel = val === 'compra' ? 'COMPRA' : 'LAUDO';
+        const typeClass = val === 'compra' ? 'status-purchase' : 'status-official';
+        rowHtml += `<td><span class="${typeClass}" style="font-size: 0.7rem; padding: 2px 6px;">${typeLabel}</span></td>`;
+      } else {
+        rowHtml += `<td>${val}</td>`;
+      }
+    });
+
+    rowHtml += `
+      <td>
+        <div style="display: flex; gap: 4px;">
+            <a href="${pdfUrl}" target="_blank" class="btn-action-small" title="Ver PDF">Visualizar</a>
+        </div>
+      </td>
+    `;
+    return `<tr>${rowHtml}</tr>`;
+  }).join('');
+}
+
+function filterViewerTable() {
+  const query = _normalize(document.getElementById('viewerSearch').value);
+  const filtered = allLaudos.filter(r =>
+    _normalize(r.id_laudo).includes(query) ||
+    _normalize(r.unidade).includes(query) ||
+    _normalize(r.item_defeito).includes(query) ||
+    _normalize(r.descricao_problema).includes(query) ||
+    _normalize(r.chamado).includes(query)
+  );
+  renderViewerTable(filtered);
+}
+
+
+async function fetchViewerLegacyPdfs() {
+  const container = document.getElementById('viewerLegacyFileList');
+  if (!container) return;
+  container.innerHTML = '<div class="legacy-loading">Carregando arquivos...</div>';
+
+  try {
+    const res = await fetch('/api/legacy-pdfs');
+    const data = await res.json();
+    if (data.success) {
+      allLegacyFiles = data.files;
+      renderViewerLegacyList(allLegacyFiles);
+    } else {
+      container.innerHTML = '<div class="legacy-loading">Erro ao carregar arquivos.</div>';
+    }
+  } catch (err) {
+    container.innerHTML = '<div class="legacy-loading">Erro de conexão.</div>';
+  }
+}
+
+function filterViewerLegacyList() {
+  const q = _normalize(document.getElementById('viewerLegacySearch')?.value || '');
+  const filtered = allLegacyFiles.filter(f => _normalize(f.name).includes(q));
+  renderViewerLegacyList(filtered);
+}
+
+function renderViewerLegacyList(files) {
+  const container = document.getElementById('viewerLegacyFileList');
+  if (!container) return;
+
+  if (!files.length) {
+    container.innerHTML = '<div class="legacy-loading">Nenhum arquivo encontrado.</div>';
+    return;
+  }
+
+  container.innerHTML = files.map((f, idx) => {
+    const shortName = f.name.replace(/\.pdf$/i, '');
+    const sizeKb = (f.size / 1024).toFixed(0);
+    const safeName = f.name.replace(/'/g, "\\'");
+    return `
+      <div class="legacy-file-item" data-index="${idx}">
+        <div class="legacy-file-info">
+          <span class="legacy-file-name">${shortName}</span>
+          <span class="legacy-file-meta">${sizeKb} KB</span>
+        </div>
+        <div class="legacy-file-actions">
+          <button class="btn-legacy-view" onclick="openPdfModal('${safeName}')" title="Visualizar PDF">
+            Visualizar Arquivo
+          </button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // Close PDF modal when clicking outside content

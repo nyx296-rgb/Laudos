@@ -5,3 +5,6 @@ qrcode[pil]
 Pillow
 docx2pdf
 waitress
+bcrypt
+flask-limiter
+apscheduler

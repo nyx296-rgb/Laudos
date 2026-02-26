@@ -1,0 +1,89 @@
+════════════════════════════════════════════════════════════════════════════
+RELATÓRIO DE VULNERABILIDADES - CODE CHECK
+════════════════════════════════════════════════════════════════════════════
+Data: 2026-02-24
+Projeto: Gerador de Laudos
+
+CRÍTICAS (ALTO RISCO):
+────────────────────────────────────────────────────────────────────────────
+
+❌ [CRÍTICA] 1. Senhas em Texto Plano
+   Local: app.py linha 91-93
+   Problema: Senhas são armazenadas sem hash/salt no banco de dados
+   Impacto: Comprometimento total de contas se BD for acessado
+   Recomendação: Implementar hash bcrypt ou argon2
+
+❌ [CRÍTICA] 2. Credencial Admin Hardcoded
+   Local: app.py linha 91, 93
+   Problema: Username 'admin' e password 'cemeru@123' fixas no código
+   Impacto: Backdoor de acesso permanente
+   Recomendação: Remover, usar variáveis de ambiente
+
+❌ [CRÍTICA] 3. Chave de Sessão Fraca
+   Local: app.py linha 10
+   Problema: `app.secret_key = 'laudo-secret-key-123'` é previsível
+   Impacto: Session hijacking, falsificação de tokens
+   Recomendação: Usar secrets.token_hex(32) ou variável de ambiente segura
+
+❌ [CRÍTICA] 4. SQL Injection Potencial
+   Local: app.py linhas 49 e 87
+   Problema: Uso de f-strings em SQL: f"ALTER TABLE {col_name}"
+   Impacto: Execução de comandos SQL maliciosos
+   Recomendação: Usar prepared statements com parâmetros
+
+ALTAS (RISCO MÉDIO-ALTO):
+────────────────────────────────────────────────────────────────────────────
+
+⚠️  [ALTA] 5. Sem Rate Limiting
+   Problema: Endpoints de login sem proteção contra brute-force
+   Impacto: Ataque de força bruta a contas
+   Recomendação: Implementar flask-limiter
+
+⚠️  [ALTA] 6. Falta de HTTPS na Produção
+   Local: run_server.py
+   Problema: Servidor exposto em HTTP sem criptografia
+   Impacto: Credenciais trafegando em texto plano
+   Recomendação: SSL/TLS obrigatório
+
+⚠️  [ALTA] 7. Sem Validação de Entrada
+   Problema: Dados de request não são validados/sanitizados
+   Impacto: Possíveis ataques XSS e injeção
+   Recomendação: Usar validators library
+
+MÉDIAS:
+────────────────────────────────────────────────────────────────────────────
+
+⚠️  [MÉDIA] 8. Exposição de Informação
+   Local: run_server.py print statements
+   Problema: IP e porta da rede são exibidos no console
+   Impacto: Facilita reconhecimento do servidor
+   Recomendação: Remover print de IPs em produção
+
+⚠️  [MÉDIA] 9. Caminho de Rede Hardcoded
+   Local: app.py linha 18
+   Problema: Path UNC exposure: \\10.0.2.35\... 
+   Impacto: Informação sobre infraestrutura exposta
+   Recomendação: Usar variáveis de ambiente
+
+⚠️  [MÉDIA] 10. Sem Logging de Segurança
+   Problema: Não há registro de tentativas de login falhas
+   Impacto: Impossível detectar ataques
+   Recomendação: Implementar audit log
+
+RESUMO RÁPIDO:
+────────────────────────────────────────────────────────────────────────────
+✓ Vulnerabilidades Críticas: 4
+✓ Vulnerabilidades Altas: 3
+✓ Vulnerabilidades Médias: 3
+✓ Score de Risco: 8.5/10 (CRÍTICO)
+
+AÇÃO IMEDIATA RECOMENDADA:
+────────────────────────────────────────────────────────────────────────────
+1. Gerar nova secret_key
+2. Preparar migração para hash bcrypt
+3. Remover credenciais hardcoded
+4. Corrigir f-strings em SQL para prepared statements
+5. Implementar rate limiting
+6. Configurar SSL/TLS
+
+════════════════════════════════════════════════════════════════════════════
