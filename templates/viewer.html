@@ -45,7 +45,6 @@
 
                     <button class="btn-login-submit" onclick="handleGlobalLogin()">
                         Acessar Sistema
-                        <span class="btn-arrow">→</span>
                     </button>
 
                     <div id="loginErrorMsg" class="login-error hidden">Usuário ou senha inválidos</div>
@@ -128,7 +127,15 @@
                                 <table id="viewerManagementTable">
                                     <thead>
                                         <tr id="viewer_management_thead_row">
-                                            <!-- Dynamic columns -->
+                                            <th>ID</th>
+                                            <th>Data</th>
+                                            <th>Tipo</th>
+                                            <th>Unidade</th>
+                                            <th>Equipamento</th>
+                                            <th>Descrição</th>
+                                            <th>Analista</th>
+                                            <th>Situação</th>
+                                            <th style="text-align: right;">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody id="viewer_management_table_body"></tbody>

@@ -123,7 +123,7 @@ async function handleGlobalLogin() {
             currentUser.role = data.role || '';
             currentUser.fullName = data.full_name || '';
             currentUser.requires_password_change = data.requires_password_change || false;
-            
+
             if (currentUser.role !== 'viewer') {
                 window.location.href = '/';
                 return;
@@ -234,61 +234,35 @@ async function fetchViewerData() {
 }
 
 function renderViewerTable(data) {
-    const theadRow = document.getElementById('viewer_management_thead_row');
+    const container = document.getElementById('viewer_table_container') || document.querySelector('.management-table-card');
     const body = document.getElementById('viewer_management_table_body');
 
-    const colNames = {
-        'id_laudo': 'ID',
-        'data': 'Data',
-        'tipo': 'Tipo',
-        'unidade': 'Unidade',
-        'item_defeito': 'Equipamento',
-        'descricao_problema': 'Descrição',
-        'nome_analista': 'Analista',
-        'situacao': 'Situação'
-    };
-
-    let visibleCols = ['data', 'tipo', 'unidade', 'item_defeito', 'descricao_problema', 'nome_analista', 'situacao'];
-
-    let htmlHead = `<th>ID</th>`;
-    visibleCols.forEach(col => {
-        htmlHead += `<th>${colNames[col] || col}</th>`;
-    });
-    htmlHead += `<th>Ações</th>`;
-    theadRow.innerHTML = htmlHead;
+    if (!data || data.length === 0) {
+        body.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 40px; color: var(--text-secondary);">Nenhum registro encontrado.</td></tr>';
+        return;
+    }
 
     body.innerHTML = data.map(r => {
         const safeId = r.id_laudo.replace(/\//g, '_');
         const pdfUrl = `/api/view-pdf/Laudo_${safeId}.pdf`;
+        const tipoLabel = r.tipo === 'compra' ? 'COMPRA' : 'LAUDO';
+        const tipoClass = r.tipo === 'compra' ? 'status-purchase' : 'status-official';
+        const descShort = r.descricao_problema ? (r.descricao_problema.substring(0, 60) + (r.descricao_problema.length > 60 ? '...' : '')) : '-';
 
-        let rowHtml = `<td>
-      <a href="${pdfUrl}" target="_blank" class="pdf-link" title="Ver PDF">
-        ${r.id_laudo}
-      </a>
-      ${r.is_test ? '<span class="is-test-badge">T</span>' : ''}
-    </td>`;
-
-        visibleCols.forEach(col => {
-            let val = r[col] || '-';
-            if (col === 'descricao_problema') {
-                rowHtml += `<td class="desc-cell">${val.substring(0, 100)}${val.length > 100 ? '...' : ''}</td>`;
-            } else if (col === 'tipo') {
-                const typeLabel = val === 'compra' ? 'COMPRA' : 'LAUDO';
-                const typeClass = val === 'compra' ? 'status-purchase' : 'status-official';
-                rowHtml += `<td><span class="${typeClass}" style="font-size: 0.7rem; padding: 2px 6px;">${typeLabel}</span></td>`;
-            } else {
-                rowHtml += `<td>${val}</td>`;
-            }
-        });
-
-        rowHtml += `
-      <td>
-        <div style="display: flex; gap: 4px;">
-            <a href="${pdfUrl}" target="_blank" class="btn-action" title="Ver PDF">👁️</a>
-        </div>
-      </td>
-    `;
-        return `<tr>${rowHtml}</tr>`;
+        return `
+        <tr>
+          <td><a href="${pdfUrl}" target="_blank" class="pdf-link" style="font-weight:700;">${r.id_laudo}</a></td>
+          <td>${new Date(r.data || r.timestamp).toLocaleDateString('pt-BR')}</td>
+          <td><span class="${tipoClass}" style="font-size: 10px; padding: 2px 6px;">${tipoLabel}</span></td>
+          <td>${r.unidade || '-'}</td>
+          <td><div style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.item_defeito}">${r.item_defeito || '-'}</div></td>
+          <td style="font-size: 12px; color: var(--text-secondary); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.descricao_problema}">${descShort}</td>
+          <td>${r.nome_analista || '-'}</td>
+          <td><small style="opacity:0.8;">${r.situacao || '-'}</small></td>
+          <td style="text-align: right;">
+            <a href="${pdfUrl}" target="_blank" class="btn-action-small btn-view" title="Ver PDF">Visualizar</a>
+          </td>
+        </tr>`;
     }).join('');
 }
 
@@ -341,18 +315,14 @@ function renderViewerLegacyList(files) {
     container.innerHTML = files.map((f, idx) => {
         const shortName = f.name.replace(/\.pdf$/i, '');
         const sizeKb = (f.size / 1024).toFixed(0);
-        const safeName = f.name.replace(/'/g, "'");
         return `
-        <div class="legacy-file-item" data-index="${idx}">
-          <div class="legacy-file-icon">📄</div>
+        <div class="legacy-file-item" onclick="openPdfModal('${f.name.replace(/'/g, "\\'")}')" style="cursor: pointer;">
           <div class="legacy-file-info">
             <span class="legacy-file-name">${shortName}</span>
             <span class="legacy-file-meta">${sizeKb} KB</span>
           </div>
           <div class="legacy-file-actions">
-            <button class="btn-legacy-view" onclick="openPdfModal('${safeName}')" title="Visualizar PDF">
-              👁️ Visualizar Arquivo
-            </button>
+            <button class="btn-legacy-view">Ver</button>
           </div>
         </div>`;
     }).join('');
@@ -428,7 +398,7 @@ async function renderViewerCharts() {
         // Chart: Unidades
         const unidadesLabels = data.unidades.map(u => u[0]);
         const unidadesData = data.unidades.map(u => u[1]);
-        
+
         const ctxUnidade = document.getElementById('viewerChartUnidade');
         if (ctxUnidade) {
             if (chartUnidadeInstance) chartUnidadeInstance.destroy();
@@ -450,7 +420,7 @@ async function renderViewerCharts() {
                     indexAxis: 'y',
                     plugins: {
                         legend: {
-                            display:false
+                            display: false
                         }
                     },
                     scales: {
@@ -465,7 +435,7 @@ async function renderViewerCharts() {
         // Chart: Equipamentos
         const equipLabels = (data.itens || []).slice(0, 10).map(i => i[0]);
         const equipData = (data.itens || []).slice(0, 10).map(i => i[1]);
-        
+
         const ctxEquip = document.getElementById('viewerChartEquipamentos');
         if (ctxEquip) {
             if (chartEquipamentosInstance) chartEquipamentosInstance.destroy();

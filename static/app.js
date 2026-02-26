@@ -58,7 +58,7 @@ async function loadTasyData() {
 function addEquipamento(prefill = null) {
   equipCount++;
   const container = document.getElementById('equipamentos-container');
-  
+
   // Exit if we're not on a page with equipment container (e.g., config page)
   if (!container) return;
 
@@ -97,7 +97,7 @@ function addEquipamento(prefill = null) {
             oninput="onTasyInput(this)"
             onfocus="onTasyFocus(this)"
             onblur="onTasyBlur(this)" />
-          <button class="tasy-search-btn" title="Buscar no Tasy" onclick="openTasyForInput(this)">🔍</button>
+          <button class="tasy-search-btn" title="Buscar no Tasy" onclick="openTasyForInput(this)">Buscar</button>
         </div>
       </div>
 
@@ -581,7 +581,7 @@ async function toggleDashboard() {
     console.warn('Dashboard page element not found');
     return;
   }
-  
+
   if (!dash.classList.contains('hidden')) {
     if (currentUser && currentUser.role === 'viewer') return;
     gotoGenerator();
@@ -653,7 +653,7 @@ function applyRbacUI() {
   if (btnGen) btnGen.classList.toggle('hidden', isViewer);
 
   const btnNavDashboard = document.getElementById('btnNavDashboard');
-  if(btnNavDashboard) btnNavDashboard.classList.toggle('hidden', isViewer);
+  if (btnNavDashboard) btnNavDashboard.classList.toggle('hidden', isViewer);
 
   // Purchase Nav
   const btnPurchase = document.getElementById('btnNavPurchase');
@@ -883,7 +883,7 @@ function onLoginSuccess() {
   }
 
   if (currentUser.role === 'viewer') {
-    try { window.location.href = '/viewer'; } catch(e) {}
+    try { window.location.href = '/viewer'; } catch (e) { }
     return;
   }
 
@@ -897,37 +897,37 @@ function awaitOnAfterLogin() {
 }
 
 async function handlePasswordReset() {
-    const password = document.getElementById('resetPassword').value;
-    const confirmPassword = document.getElementById('resetConfirmPassword').value;
+  const password = document.getElementById('resetPassword').value;
+  const confirmPassword = document.getElementById('resetConfirmPassword').value;
 
-    if (!password || !confirmPassword) {
-        showToast('Por favor, preencha todos os campos.', 'error');
-        return;
-    }
+  if (!password || !confirmPassword) {
+    showToast('Por favor, preencha todos os campos.', 'error');
+    return;
+  }
 
-    if (password !== confirmPassword) {
-        showToast('As senhas não coincidem.', 'error');
-        return;
-    }
+  if (password !== confirmPassword) {
+    showToast('As senhas não coincidem.', 'error');
+    return;
+  }
 
-    try {
-        const res = await fetch('/api/profile', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: password })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showToast('Senha alterada com sucesso!', 'success');
-            document.getElementById('passwordResetModal').classList.add('hidden');
-            currentUser.requires_password_change = false;
-            onLoginSuccess();
-        } else {
-            showToast(data.error || 'Erro ao alterar a senha.', 'error');
-        }
-    } catch (err) {
-        showToast('Erro de conexão.', 'error');
+  try {
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Senha alterada com sucesso!', 'success');
+      document.getElementById('passwordResetModal').classList.add('hidden');
+      currentUser.requires_password_change = false;
+      onLoginSuccess();
+    } else {
+      showToast(data.error || 'Erro ao alterar a senha.', 'error');
     }
+  } catch (err) {
+    showToast('Erro de conexão.', 'error');
+  }
 }
 
 /**
@@ -1159,7 +1159,7 @@ async function selectListCategory(cat) {
   // Exit if not on config page
   const view = document.getElementById('listManagementView');
   if (!view) return;
-  
+
   selectedListCategory = cat;
   hideAllConfigViews();
   view.classList.remove('hidden');
@@ -1327,22 +1327,22 @@ async function loadNetworkPath() {
 async function triggerBackupNow() {
   const statusDiv = document.getElementById('backupStatus');
   if (!statusDiv) return;
-  
+
   statusDiv.textContent = 'Iniciando backup...';
   statusDiv.style.color = 'var(--info)';
-  
+
   try {
     const response = await fetch('/api/backup-now', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
     const data = await response.json();
-    
+
     if (data.success) {
       statusDiv.textContent = `Backup concluído: ${data.files_count} arquivos copiados`;
       statusDiv.style.color = 'var(--success)';
       showToast('Backup executado com sucesso!', 'success');
-      
+
       // Atualizar histórico
       const historyDiv = document.getElementById('backupHistory');
       if (historyDiv) {
@@ -1549,7 +1549,7 @@ function renderUsersTable(users) {
             </button>
             ${(canDelete && !isTargetMaster) ? `
               <button class="btn-del-small" onclick="deleteUser(${u.id})" title="Excluir Usuário">
-                <span>🗑️</span>
+                <span>Excluir</span>
               </button>
             ` : ''}
           </div>
@@ -1735,12 +1735,12 @@ async function fetchStats(isViewer = false) {
     const res = await fetch('/api/stats');
     const data = await res.json();
     if (data.success) {
-        if(isViewer) {
-            const recentBody = document.getElementById('viewer_recent_laudos_body');
-            recentBody.innerHTML = data.recent.map(r => {
-                const safeId = r[0].replace(/\//g, '_');
-                const pdfUrl = `/api/view-pdf/Laudo_${safeId}.pdf`;
-                return `
+      if (isViewer) {
+        const recentBody = document.getElementById('viewer_recent_laudos_body');
+        recentBody.innerHTML = data.recent.map(r => {
+          const safeId = r[0].replace(/\//g, '_');
+          const pdfUrl = `/api/view-pdf/Laudo_${safeId}.pdf`;
+          return `
                 <tr>
                 <td><a href="${pdfUrl}" target="_blank" class="pdf-link" title="Ver PDF" style="font-weight:bold; color:var(--primary);">${r[0]}</a></td>
                 <td>${r[1]}</td>
@@ -1751,9 +1751,9 @@ async function fetchStats(isViewer = false) {
                 </td>
                 </tr>
             `;
-            }).join('');
-            return
-        }
+        }).join('');
+        return
+      }
       document.getElementById('stat_total').textContent = data.total;
       document.getElementById('stat_compras').textContent = data.total_compras || 0;
       document.getElementById('stat_units_count').textContent = data.unidades.length;
@@ -1925,6 +1925,16 @@ function renderManagementTable(data) {
 
     visibleColumns.forEach(col => {
       let val = r[col] || '-';
+      if (col === 'data') {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) {
+          val = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        } else if (typeof val === 'string' && val.includes('/')) {
+          const [day, month, year] = val.split('/');
+          const d2 = new Date(`${year}-${month}-${day}`);
+          val = (!isNaN(d2.getTime())) ? d2.toLocaleDateString('pt-BR') : val;
+        }
+      }
       if (col === 'descricao_problema') {
         rowHtml += `<td class="desc-cell">${val.substring(0, 100)}${val.length > 100 ? '...' : ''}</td>`;
       } else if (col === 'tipo') {
@@ -1939,8 +1949,8 @@ function renderManagementTable(data) {
     rowHtml += `
       <td>
         <div style="display: flex; gap: 4px;">
-          ${!isViewer ? `<button class="btn-action" onclick="toggleTest(${r.id})" title="Alternar Modo Teste">🧪</button>` : ''}
-          ${isAdmin ? `<button class="btn-action btn-delete" onclick="deleteLaudo(${r.id})" title="Excluir">🗑️</button>` : ''}
+          ${!isViewer ? `<button class="btn-action-small" onclick="toggleTest(${r.id})" title="Alternar Modo Teste">Teste</button>` : ''}
+          ${isAdmin ? `<button class="btn-action-small btn-delete" onclick="deleteLaudo(${r.id})" title="Excluir">Excluir</button>` : ''}
         </div>
       </td>
     `;
@@ -2052,7 +2062,7 @@ function renderLegacyOnlyList(files) {
         </div>
         <div class="legacy-file-actions">
           <button class="btn-legacy-view" onclick="openPdfModal('${safeName}')" title="Visualizar PDF">
-            👁️ Visualizar Arquivo
+            Visualizar Arquivo
           </button>
         </div>
       </div>`;
@@ -2099,17 +2109,16 @@ function renderLegacyList(files) {
     const safeName = f.name.replace(/'/g, "\\'");
     return `
       <div class="legacy-file-item" data-index="${idx}">
-        <div class="legacy-file-icon">📄</div>
         <div class="legacy-file-info">
           <span class="legacy-file-name">${shortName}</span>
           <span class="legacy-file-meta">${sizeKb} KB</span>
         </div>
         <div class="legacy-file-actions">
           <button class="btn-legacy-view" onclick="openPdfModal('${safeName}')" title="Visualizar">
-            👁️ Visualizar
+            Visualizar
           </button>
           <button class="btn-legacy-del" onclick="deleteLegacyPdf('${safeName}')" title="Excluir do disco">
-            🗑️
+            Excluir
           </button>
         </div>
       </div>`;
@@ -2158,113 +2167,125 @@ async function deleteLegacyPdf(filename) {
 // ============================================================
 
 function showViewerDashboard() {
-    hideAllPages();
-    document.getElementById('viewerDashboardPage').classList.remove('hidden');
-    updateNavActive('btnNavDashboard');
-    fetchStats(true);
-    fetchViewerData();
-    fetchViewerLegacyPdfs();
+  hideAllPages();
+  document.getElementById('viewerDashboardPage').classList.remove('hidden');
+  updateNavActive('btnNavDashboard');
+  fetchStats(true);
+  fetchViewerData();
+  fetchViewerLegacyPdfs();
 }
 
 function switchViewerTab(tab) {
-    document.querySelectorAll('#viewerDashboardPage .tab-btn').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.querySelector(`.tab-btn[onclick*="'${tab}'"]`);
-    if (activeBtn) activeBtn.classList.add('active');
+  document.querySelectorAll('#viewerDashboardPage .tab-btn').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.querySelector(`.tab-btn[onclick*="'${tab}'"]`);
+  if (activeBtn) activeBtn.classList.add('active');
 
-    if(tab === 'viewer-main') {
-        document.getElementById('viewerMain').classList.remove('hidden');
-        document.getElementById('viewerLegacy').classList.add('hidden');
-    } else {
-        document.getElementById('viewerMain').classList.add('hidden');
-        document.getElementById('viewerLegacy').classList.remove('hidden');
-    }
+  if (tab === 'viewer-main') {
+    document.getElementById('viewerMain').classList.remove('hidden');
+    document.getElementById('viewerLegacy').classList.add('hidden');
+  } else {
+    document.getElementById('viewerMain').classList.add('hidden');
+    document.getElementById('viewerLegacy').classList.remove('hidden');
+  }
 }
 
 async function fetchViewerData() {
-    try {
-        const typeFilter = document.getElementById('viewerTypeFilter')?.value || '';
-        const url = typeFilter ? `/api/laudos?tipo=${typeFilter}` : '/api/laudos';
-        const res = await fetch(url);
-        const json = await res.json();
-        if (json.success) {
-            allLaudos = json.data;
-            renderViewerTable(allLaudos);
-        }
-    } catch (err) {
-        showToast('Erro ao carregar dados');
+  try {
+    const typeFilter = document.getElementById('viewerTypeFilter')?.value || '';
+    const url = typeFilter ? `/api/laudos?tipo=${typeFilter}` : '/api/laudos';
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.success) {
+      allLaudos = json.data;
+      renderViewerTable(allLaudos);
     }
+  } catch (err) {
+    showToast('Erro ao carregar dados');
+  }
 }
 
 function renderViewerTable(data) {
-    const theadRow = document.getElementById('viewer_management_thead_row');
-    const body = document.getElementById('viewer_management_table_body');
+  const theadRow = document.getElementById('viewer_management_thead_row');
+  const body = document.getElementById('viewer_management_table_body');
 
-    const colNames = {
-        'id_laudo': 'ID',
-        'data': 'Data',
-        'tipo': 'Tipo',
-        'unidade': 'Unidade',
-        'item_defeito': 'Equipamento',
-        'descricao_problema': 'Descrição',
-        'nome_analista': 'Analista',
-        'situacao': 'Situação',
-        'chamado': 'Chamado'
-    };
-    
-    let visibleCols = ['data', 'tipo', 'unidade', 'item_defeito', 'descricao_problema', 'nome_analista', 'situacao', 'chamado'];
+  const colNames = {
+    'id_laudo': 'ID',
+    'data': 'Data',
+    'tipo': 'Tipo',
+    'unidade': 'Unidade',
+    'item_defeito': 'Equipamento',
+    'descricao_problema': 'Descrição',
+    'nome_analista': 'Analista',
+    'situacao': 'Situação',
+    'chamado': 'Chamado'
+  };
 
-    let htmlHead = `<th>ID</th>`;
-    visibleCols.forEach(col => {
-        htmlHead += `<th>${colNames[col] || col}</th>`;
-    });
-    htmlHead += `<th>Ações</th>`;
-    theadRow.innerHTML = htmlHead;
+  let visibleCols = ['data', 'tipo', 'unidade', 'item_defeito', 'descricao_problema', 'nome_analista', 'situacao', 'chamado'];
 
-    body.innerHTML = data.map(r => {
-        const safeId = r.id_laudo.replace(/\//g, '_');
-        const pdfUrl = `/api/view-pdf/Laudo_${safeId}.pdf`;
+  let htmlHead = `<th>ID</th>`;
+  visibleCols.forEach(col => {
+    htmlHead += `<th>${colNames[col] || col}</th>`;
+  });
+  htmlHead += `<th>Ações</th>`;
+  theadRow.innerHTML = htmlHead;
 
-        let rowHtml = `<td>
+  body.innerHTML = data.map(r => {
+    const safeId = r.id_laudo.replace(/\//g, '_');
+    const pdfUrl = `/api/view-pdf/Laudo_${safeId}.pdf`;
+
+    let rowHtml = `<td>
       <a href="${pdfUrl}" target="_blank" class="pdf-link" title="Ver PDF">
         ${r.id_laudo}
       </a>
       ${r.is_test ? '<span class="is-test-badge">T</span>' : ''}
     </td>`;
 
-        visibleCols.forEach(col => {
-            let val = r[col] || '-';
-            if (col === 'descricao_problema') {
-                rowHtml += `<td class="desc-cell">${val.substring(0, 100)}${val.length > 100 ? '...' : ''}</td>`;
-            } else if (col === 'tipo') {
-                const typeLabel = val === 'compra' ? 'COMPRA' : 'LAUDO';
-                const typeClass = val === 'compra' ? 'status-purchase' : 'status-official';
-                rowHtml += `<td><span class="${typeClass}" style="font-size: 0.7rem; padding: 2px 6px;">${typeLabel}</span></td>`;
-            } else {
-                rowHtml += `<td>${val}</td>`;
-            }
-        });
+    visibleCols.forEach(col => {
+      let val = r[col] || '-';
+      if (col === 'data') {
+        if (typeof val === 'string' && val.includes('/')) {
+          const parts = val.split('/');
+          if (parts.length === 3) {
+            const d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            val = (isNaN(d.getTime())) ? val : d.toLocaleDateString('pt-BR');
+          }
+        } else {
+          const d = new Date(val);
+          val = (isNaN(d.getTime())) ? val : d.toLocaleDateString('pt-BR');
+        }
+      }
+      if (col === 'descricao_problema') {
+        rowHtml += `<td class="desc-cell">${val.substring(0, 100)}${val.length > 100 ? '...' : ''}</td>`;
+      } else if (col === 'tipo') {
+        const typeLabel = val === 'compra' ? 'COMPRA' : 'LAUDO';
+        const typeClass = val === 'compra' ? 'status-purchase' : 'status-official';
+        rowHtml += `<td><span class="${typeClass}" style="font-size: 0.7rem; padding: 2px 6px;">${typeLabel}</span></td>`;
+      } else {
+        rowHtml += `<td>${val}</td>`;
+      }
+    });
 
-        rowHtml += `
+    rowHtml += `
       <td>
         <div style="display: flex; gap: 4px;">
-            <a href="${pdfUrl}" target="_blank" class="btn-action" title="Ver PDF">👁️</a>
+            <a href="${pdfUrl}" target="_blank" class="btn-action-small" title="Ver PDF">Visualizar</a>
         </div>
       </td>
     `;
-        return `<tr>${rowHtml}</tr>`;
-    }).join('');
+    return `<tr>${rowHtml}</tr>`;
+  }).join('');
 }
 
 function filterViewerTable() {
-    const query = _normalize(document.getElementById('viewerSearch').value);
-    const filtered = allLaudos.filter(r =>
-        _normalize(r.id_laudo).includes(query) ||
-        _normalize(r.unidade).includes(query) ||
-        _normalize(r.item_defeito).includes(query) ||
-        _normalize(r.descricao_problema).includes(query) ||
-        _normalize(r.chamado).includes(query)
-    );
-    renderViewerTable(filtered);
+  const query = _normalize(document.getElementById('viewerSearch').value);
+  const filtered = allLaudos.filter(r =>
+    _normalize(r.id_laudo).includes(query) ||
+    _normalize(r.unidade).includes(query) ||
+    _normalize(r.item_defeito).includes(query) ||
+    _normalize(r.descricao_problema).includes(query) ||
+    _normalize(r.chamado).includes(query)
+  );
+  renderViewerTable(filtered);
 }
 
 
@@ -2308,14 +2329,13 @@ function renderViewerLegacyList(files) {
     const safeName = f.name.replace(/'/g, "\\'");
     return `
       <div class="legacy-file-item" data-index="${idx}">
-        <div class="legacy-file-icon">📄</div>
         <div class="legacy-file-info">
           <span class="legacy-file-name">${shortName}</span>
           <span class="legacy-file-meta">${sizeKb} KB</span>
         </div>
         <div class="legacy-file-actions">
           <button class="btn-legacy-view" onclick="openPdfModal('${safeName}')" title="Visualizar PDF">
-            👁️ Visualizar Arquivo
+            Visualizar Arquivo
           </button>
         </div>
       </div>`;
