@@ -523,7 +523,8 @@
               style="margin-bottom: 20px; background: var(--bg-surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
               <input type="text" id="newItemInput" placeholder="Novo item..."
                 style="border: none; background: transparent; padding: 8px; font-size: 13px;" />
-              <button class="btn-action-small" onclick="addNewItem()">Adicionar</button>
+              <button class="btn-action-small" onclick="addNewItem()"
+                style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-secondary);">Adicionar</button>
             </div>
             <div class="item-list" id="itemsContainer">
               <div class="loading">Carregando...</div>
@@ -590,7 +591,8 @@
               <p style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">A rotina de backup automático está
                 configurada para todos os dias às <strong>20:00</strong>.</p>
             </div>
-            <button class="btn-primary" onclick="saveNetworkPath()" style="margin-top: 15px;">Salvar
+            <button class="btn-secondary" onclick="saveNetworkPath()"
+              style="margin-top: 15px; padding: 6px 14px; font-size: 12px;">Salvar
               Configuração</button>
           </div>
 
@@ -640,7 +642,8 @@
               <label>Confirmar Senha</label>
               <input type="password" id="profileConfirmPassword" placeholder="Confirme a senha">
             </div>
-            <button class="btn-primary" onclick="saveProfile()">Salvar Alterações</button>
+            <button class="btn-secondary" onclick="saveProfile()" style="padding: 6px 14px; font-size: 12px;">Salvar
+              Alterações</button>
           </div>
 
         </div>

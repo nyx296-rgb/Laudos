@@ -3,6 +3,8 @@ import shutil
 import json
 import sqlite3
 import re
+import csv
+import io
 import secrets
 import bcrypt
 from datetime import datetime
@@ -707,13 +709,17 @@ def get_stats():
     total_compras = cursor.fetchone()[0]
     
     # Stats by Unit (Top 5 for chart)
-    cursor.execute('SELECT unidade, COUNT(*) FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" GROUP BY unidade ORDER BY COUNT(*) DESC')
+    cursor.execute('SELECT unidade, COUNT(*) FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" GROUP BY unidade ORDER BY COUNT(*) DESC LIMIT 5')
     unidades = cursor.fetchall()
     
     # Stats by Item (Top 5 for chart)
     cursor.execute('SELECT item_defeito, COUNT(*) FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" AND item_defeito IS NOT NULL AND item_defeito != "" GROUP BY item_defeito ORDER BY COUNT(*) DESC LIMIT 5')
     itens = cursor.fetchall()
     
+    # Stats by Analyst (Top 5 for chart)
+    cursor.execute('SELECT nome_analista, COUNT(*) FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" AND nome_analista IS NOT NULL AND nome_analista != "" GROUP BY nome_analista ORDER BY COUNT(*) DESC LIMIT 5')
+    analistas = cursor.fetchall()
+
     # Recent laudos
     cursor.execute('SELECT id_laudo, data, unidade, setor, is_test, tipo FROM laudos WHERE id_laudo NOT LIKE "IMP-%" ORDER BY timestamp DESC LIMIT 10')
     recent = cursor.fetchall()
@@ -726,6 +732,7 @@ def get_stats():
         'total_compras': total_compras,
         'unidades': unidades,
         'itens': itens,
+        'analistas': analistas,
         'recent': recent
     })
 
@@ -777,13 +784,13 @@ def get_incidence_report():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Incidences of item_defeito by unidade
+    # Incidences of item_defeito by unidade (Gargalos)
     cursor.execute('''
-        SELECT item_defeito, unidade, COUNT(*) as count 
+        SELECT item_defeito, COUNT(*) as total_ocorr, GROUP_CONCAT(DISTINCT unidade) as unidades 
         FROM laudos 
         WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%" AND item_defeito IS NOT NULL AND item_defeito != ""
-        GROUP BY item_defeito, unidade 
-        ORDER BY count DESC
+        GROUP BY item_defeito 
+        ORDER BY total_ocorr DESC
     ''')
     incidences = cursor.fetchall()
     
@@ -805,6 +812,82 @@ def get_incidence_report():
         'incidences': incidences,
         'problem_items': problem_items
     })
+
+@app.route('/api/reports/export')
+@role_required(['master', 'admin', 'suporte'])
+def export_report():
+    data_inicio = request.args.get('inicio', '')
+    data_fim = request.args.get('fim', '')
+    tipo = request.args.get('tipo', '')
+    formato = request.args.get('format', 'csv')
+    
+    query = 'SELECT id_laudo, tipo, data, unidade, setor, nome_analista, item_defeito, situacao, descricao_problema FROM laudos WHERE is_test = 0 AND id_laudo NOT LIKE "IMP-%"'
+    params = []
+    
+    if data_inicio:
+        query += " AND data >= ?"
+        params.append(data_inicio)
+    if data_fim:
+        query += " AND data <= ?"
+        params.append(data_fim)
+    if tipo:
+        query += " AND tipo = ?"
+        params.append(tipo)
+        
+    query += " ORDER BY data DESC"
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]
+    conn.close()
+    
+    from flask import Response
+    
+    if formato == 'excel':
+        import openpyxl
+        from openpyxl.utils import get_column_letter
+        
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Relatorio"
+        
+        ws.append(columns)
+        for row in rows:
+            ws.append(row)
+            
+        for col in ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(col[0].column)
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            ws.column_dimensions[column_letter].width = min(adjusted_width, 50)
+            
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name='relatorio_exportacao.xlsx'
+        )
+    else:
+        output = io.StringIO()
+        writer = csv.writer(output, delimiter=';', dialect='excel')
+        writer.writerow(columns)
+        writer.writerows(rows)
+        
+        response = Response(output.getvalue(), content_type='text/csv; charset=utf-8-sig')
+        response.headers['Content-Disposition'] = 'attachment; filename=relatorio_exportacao.csv'
+        return response
 
 @app.route('/api/view-pdf/<path:filename>')
 @role_required(['master', 'suporte', 'viewer', 'admin'])

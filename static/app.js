@@ -1782,8 +1782,9 @@ async function fetchStats(isViewer = false) {
       }).join('');
 
       // Render Charts
-      renderPieChart('chartUnidades', data.unidades.slice(0, 6), 'Unidades');
-      renderPieChart('chartItens', data.itens, 'Equipamentos');
+      if (data.analistas) renderPieChart('chartAnalistas', data.analistas, 'Analistas');
+      if (data.unidades) renderPieChart('chartUnidades', data.unidades.slice(0, 6), 'Unidades');
+      if (data.itens) renderPieChart('chartItens', data.itens, 'Equipamentos');
     }
   } catch (err) {
     console.error('Erro ao buscar stats:', err);
@@ -1808,9 +1809,16 @@ function renderPieChart(canvasId, rawData, label) {
       datasets: [{
         data: values,
         backgroundColor: [
-          '#60a5fa', '#f87171', '#34d399', '#fbbf24', '#a78bfa', '#f472b6', '#94a3b8'
+          'rgba(61, 142, 240, 0.85)', // accent (blue)
+          'rgba(63, 185, 80, 0.85)',  // success (green)
+          'rgba(210, 153, 34, 0.85)', // warning (yellow)
+          'rgba(163, 113, 247, 0.85)',// purple neon
+          'rgba(248, 81, 73, 0.85)',  // danger (red)
+          'rgba(255, 123, 114, 0.85)',// light red
+          'rgba(139, 148, 158, 0.85)' // secondary
         ],
-        borderWidth: 0,
+        borderColor: '#161b22',
+        borderWidth: 2,
         hoverOffset: 10
       }]
     },
@@ -1848,15 +1856,31 @@ async function fetchIncidenceReport() {
       const body = document.getElementById('incidence_report_body');
       body.innerHTML = data.incidences.map(i => `
         <tr>
-          <td>${i[0]}</td>
-          <td>${i[1]}</td>
-          <td><strong>${i[2]}</strong></td>
+          <td style="font-weight: 500; color: var(--text-primary);">${i[0]}</td>
+          <td><span class="status-purchase" style="background: rgba(248, 81, 73, 0.15); color: var(--danger);">${i[1]}</span></td>
+          <td style="font-size: 12px; color: var(--text-secondary); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${i[2] || '-'}">${i[2] || '-'}</td>
         </tr>
       `).join('');
     }
   } catch (err) {
     showToast('Erro ao carregar relatório');
   }
+}
+
+function downloadExport(format) {
+  const dataInicio = document.getElementById('exportDataInicio').value;
+  const dataFim = document.getElementById('exportDataFim').value;
+  const tipo = document.getElementById('exportTipo').value;
+
+  let url = '/api/reports/export?';
+  const params = new URLSearchParams();
+  if (dataInicio) params.append('inicio', dataInicio);
+  if (dataFim) params.append('fim', dataFim);
+  if (tipo) params.append('tipo', tipo);
+  params.append('format', format || 'csv');
+
+  url += params.toString();
+  window.open(url, '_blank');
 }
 
 let allLaudos = [];
@@ -2220,7 +2244,7 @@ function renderViewerTable(data) {
     'chamado': 'Chamado'
   };
 
-  let visibleCols = ['data', 'tipo', 'unidade', 'item_defeito', 'descricao_problema', 'nome_analista', 'situacao', 'chamado'];
+  let visibleCols = ['tipo', 'unidade', 'item_defeito', 'descricao_problema', 'nome_analista', 'situacao', 'chamado'];
 
   let htmlHead = `<th>ID</th>`;
   visibleCols.forEach(col => {

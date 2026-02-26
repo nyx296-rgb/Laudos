@@ -127,6 +127,12 @@
 
               <div class="stats-visuals">
                 <div class="chart-card">
+                  <h3>Produtividade (Analistas)</h3>
+                  <div class="chart-container">
+                    <canvas id="chartAnalistas"></canvas>
+                  </div>
+                </div>
+                <div class="chart-card">
                   <h3>Distribuição por Unidade</h3>
                   <div class="chart-container">
                     <canvas id="chartUnidades"></canvas>
@@ -171,22 +177,70 @@
               </div>
             </div>
 
-            <!-- Tab: Reports -->
+            <!-- Tab: Reports / Exportação e Gargalos -->
             <div id="tab-content-reports" class="tab-item-content hidden">
-              <div class="report-container">
+              <div class="dashboard-grid-layout" style="grid-template-columns: 1fr 2fr;">
+
+                <!-- Módulo de Exportação -->
+                <div class="stats-table-card" style="align-self: start;">
+                  <h3>Exportação de Dados</h3>
+                  <p class="report-desc" style="margin-bottom: 20px;">Baixe uma planilha completa de laudos ou compras
+                    do período desejado.</p>
+
+                  <div class="field" style="margin-bottom: 12px;">
+                    <label style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;display:block;">Data
+                      Inicial</label>
+                    <input type="date" id="exportDataInicio"
+                      style="width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);">
+                  </div>
+
+                  <div class="field" style="margin-bottom: 12px;">
+                    <label style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;display:block;">Data
+                      Final</label>
+                    <input type="date" id="exportDataFim"
+                      style="width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);">
+                  </div>
+
+                  <div class="field" style="margin-bottom: 20px;">
+                    <label style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;display:block;">Tipo de
+                      Documento</label>
+                    <select id="exportTipo"
+                      style="width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);">
+                      <option value="">Todos</option>
+                      <option value="laudo">Laudos de Manutenção</option>
+                      <option value="compra">Solicitações de Compra</option>
+                    </select>
+                  </div>
+
+                  <div style="display: flex; gap: 12px; margin-top: 10px;">
+                    <button class="btn-secondary" onclick="downloadExport('csv')"
+                      style="flex: 1; justify-content: center;">
+                      Exportar CSV
+                    </button>
+                    <button class="btn-secondary" onclick="downloadExport('excel')"
+                      style="flex: 1; justify-content: center;">
+                      Exportar Excel
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Painel de Gargalos -->
                 <div class="stats-table-card">
-                  <h3>Equipamentos com mais Incidências</h3>
-                  <p class="report-desc">Relatório consolidado de defeitos por item e localização.</p>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Equipamento</th>
-                        <th>Unidade / Local</th>
-                        <th>Ocorrências</th>
-                      </tr>
-                    </thead>
-                    <tbody id="incidence_report_body"></tbody>
-                  </table>
+                  <h3>Gargalos e Custos Ocultos</h3>
+                  <p class="report-desc" style="margin-bottom: 20px;">Ranking de equipamentos críticos que apresentam
+                    maior índice de defeito.</p>
+                  <div class="table-scroll" style="max-height: 400px; overflow-y: auto;">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Equipamento com Defeito</th>
+                          <th>Ocorrências</th>
+                          <th>Unidades Afetadas</th>
+                        </tr>
+                      </thead>
+                      <tbody id="incidence_report_body"></tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -203,7 +257,7 @@
           <header class="dashboard-header">
             <div class="header-left">
               <button class="btn-back" onclick="toggleDashboard()">← Voltar ao Dashboard</button>
-              <h2>📂 Consultas de Laudos</h2>
+              <h2>Consultas de Laudos</h2>
             </div>
           </header>
           <div class="stats-viewport">
@@ -393,7 +447,7 @@
           </div>
           <div id="equipamentos-container" class="equip-list">
             <div class="empty-equip">
-              <span class="icon">🖥️</span>
+              <span class="icon"></span>
               <strong>Nenhum item adicionado</strong>
             </div>
           </div>
