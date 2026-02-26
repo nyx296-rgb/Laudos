@@ -7,12 +7,14 @@
   <title>Configurações - Gerador de Laudos</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=21">
-  <script src="/static/app.js?v=21" defer></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=22">
+  <script src="/static/app.js?v=22" defer></script>
   <style>
     .config-container {
-      max-width: 900px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 20px 0 250px 0;
     }
@@ -652,6 +654,60 @@
     </main>
   </div>
 
+  <!-- Modal: Gestão de Usuários -->
+  <div id="userModal" class="pdf-modal-overlay hidden">
+    <div class="pdf-modal-content" style="max-width: 450px; height: auto;">
+      <div class="pdf-modal-header">
+        <span id="userModalTitle" class="pdf-modal-title">Novo Usuário</span>
+        <button class="pdf-modal-close" onclick="hideUserModal()">✕</button>
+      </div>
+      <div style="padding: 24px;">
+        <input type="hidden" id="modalUserId">
+
+        <div class="form-group">
+          <label>Usuário (Login)</label>
+          <input type="text" id="modalUsername" placeholder="Ex: joao.silva">
+        </div>
+
+        <div class="form-group" id="modalPasswordGroup">
+          <label id="modalPasswordLabel">Senha</label>
+          <input type="password" id="modalPassword" placeholder="Mínimo 8 caracteres">
+          <small id="passwordHint" style="color: var(--text-secondary); display: none;">Deixe em branco para manter a
+            atual</small>
+          <small id="passwordRequirementHint"
+            style="color: var(--text-secondary); display: block; font-size: 11px; margin-top: 4px;">A senha deve ter
+            pelo menos 8 caracteres.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Nome Completo</label>
+          <input type="text" id="modalFullName" placeholder="Ex: João da Silva">
+        </div>
+
+        <div class="form-group">
+          <label>Nível de Acesso</label>
+          <select id="modalRole">
+            <option value="viewer">Consultor (Apenas Leitura)</option>
+            <option value="suporte">Suporte (Gera Laudos)</option>
+            <option value="admin">Administrador</option>
+            <option value="master">Administrador Geral</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="modalActiveGroup">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="modalIsActive" checked> Status Ativo
+          </label>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+          <button class="btn-primary" onclick="saveUserModal()" style="flex: 1;">Salvar Alterações</button>
+          <button class="btn-secondary" onclick="hideUserModal()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast hidden"></div>
   <script src="/static/data_options.js?v=15"></script>
 
@@ -1106,38 +1162,108 @@
     }
 
     // USUÁRIOS
-    function toggleAddUserForm() {
-      document.getElementById('addUserForm').classList.toggle('hidden');
+    function showEditUserModal(user) {
+      document.getElementById('userModalTitle').textContent = 'Editar Usuário';
+      document.getElementById('modalUserId').value = user.id;
+      document.getElementById('modalUsername').value = user.username;
+      document.getElementById('modalUsername').disabled = true;
+      document.getElementById('modalPassword').value = '';
+      document.getElementById('passwordHint').style.display = 'block';
+      document.getElementById('modalFullName').value = user.full_name || '';
+      document.getElementById('modalRole').value = user.role;
+      document.getElementById('modalIsActive').checked = user.is_active;
+      document.getElementById('modalActiveGroup').classList.remove('hidden');
+      document.getElementById('userModal').classList.remove('hidden');
     }
 
-    async function createUser() {
-      const username = document.getElementById('newUsername').value;
-      const password = document.getElementById('newPassword').value;
-      const role = document.getElementById('newUserRole').value;
+    function toggleAddUserForm() {
+      // Usar o mesmo modal para consistência
+      document.getElementById('userModalTitle').textContent = 'Novo Usuário';
+      document.getElementById('modalUserId').value = '';
+      document.getElementById('modalUsername').value = '';
+      document.getElementById('modalUsername').disabled = false;
+      document.getElementById('modalPassword').value = '';
+      document.getElementById('passwordHint').style.display = 'none';
+      document.getElementById('modalFullName').value = '';
+      document.getElementById('modalRole').value = 'suporte';
+      document.getElementById('modalIsActive').checked = true;
+      document.getElementById('modalActiveGroup').classList.add('hidden');
+      document.getElementById('userModal').classList.remove('hidden');
+    }
 
-      if (!username || !password) {
-        showToast('Preencha todos os campos', 'error');
-        return;
+    function hideUserModal() {
+      document.getElementById('userModal').classList.add('hidden');
+    }
+
+    async function saveUserModal() {
+      const id = document.getElementById('modalUserId').value;
+      const username = document.getElementById('modalUsername').value;
+      const password = document.getElementById('modalPassword').value;
+      const fullName = document.getElementById('modalFullName').value;
+      const role = document.getElementById('modalRole').value;
+      const isActive = document.getElementById('modalIsActive').checked;
+
+      const isEdit = !!id;
+      const url = isEdit ? `/api/admin/users/${id}` : '/api/admin/users';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const bodyData = {
+        full_name: fullName,
+        role: role,
+        is_active: isActive
+      };
+
+      if (!isEdit) {
+        if (!username || !password) {
+          showToast('Usuário e senha são obrigatórios', 'error');
+          return;
+        }
+        if (password.length < 8) {
+          showToast('A senha deve ter no mínimo 8 caracteres', 'error');
+          return;
+        }
+        bodyData.username = username;
+        bodyData.password = password;
+      } else if (password) {
+        if (password.length < 8) {
+          showToast('A nova senha deve ter no mínimo 8 caracteres', 'error');
+          return;
+        }
+        bodyData.password = password;
       }
 
       try {
-        const res = await fetch('/api/admin/users', {
-          method: 'POST',
+        const res = await fetch(url, {
+          method: method,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, role })
+          body: JSON.stringify(bodyData)
         });
         const data = await res.json();
         if (data.success) {
-          showToast('✓ Usuário criado', 'success');
-          document.getElementById('newUsername').value = '';
-          document.getElementById('newPassword').value = '';
-          toggleAddUserForm();
+          showToast(isEdit ? '✓ Usuário atualizado' : '✓ Usuário criado', 'success');
+          hideUserModal();
           loadUsers();
         } else {
-          showToast('Erro ao criar usuário', 'error');
+          showToast(data.error || 'Erro ao salvar', 'error');
         }
       } catch (err) {
-        showToast('Erro ao criar', 'error');
+        showToast('Erro de conexão', 'error');
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Excluir este usuário permanentemente?')) return;
+      try {
+        const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✓ Usuário excluído', 'success');
+          loadUsers();
+        } else {
+          showToast(data.error || 'Erro ao excluir', 'error');
+        }
+      } catch (err) {
+        showToast('Erro de conexão', 'error');
       }
     }
 
@@ -1145,7 +1271,7 @@
       try {
         const res = await fetch('/api/admin/users');
         const data = await res.json();
-        const users = data.data || []; // Corrected: backend returns "data" key
+        const users = data.data || [];
 
         if (data.success && users) {
           const html = `
@@ -1154,18 +1280,29 @@
                 <thead>
                   <tr>
                     <th>Usuário</th>
+                    <th>Nome Completo</th>
                     <th>Função</th>
-                    <th style="text-align: right;">Status</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${users.map(user => `
                     <tr>
-                      <td><strong>${user.username}</strong></td>
+                      <td><strong>@${user.username}</strong></td>
+                      <td>${user.full_name || '—'}</td>
                       <td><span class="badge-role ${user.role || 'viewer'}">${user.role || 'viewer'}</span></td>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <span class="status-dot ${user.is_active ? 'active' : 'inactive'}"></span>
+                          <small>${user.is_active ? 'Ativo' : 'Inativo'}</small>
+                        </div>
+                      </td>
                       <td style="text-align: right;">
-                        <span class="status-dot ${user.is_active ? 'active' : 'inactive'}"></span>
-                        <small>${user.is_active ? 'Ativo' : 'Inativo'}</small>
+                        <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                          <button class="btn-action-small" onclick="showEditUserModal(${JSON.stringify(user).replace(/"/g, '&quot;')})">Editar</button>
+                          ${(currentUser.role === 'master' && user.username !== 'admin') ? `<button class="btn-action-small btn-delete" onclick="deleteUser(${user.id})">Excluir</button>` : ''}
+                        </div>
                       </td>
                     </tr>
                   `).join('')}

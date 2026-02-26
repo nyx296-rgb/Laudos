@@ -502,14 +502,18 @@ def update_user(user_id):
     if full_name:
         updates.append("full_name = ?")
         params.append(full_name.strip())
-    if is_active is not None:
-        updates.append("is_active = ?")
-        params.append(1 if is_active else 0)
-    if password and len(password) >= 8:
+    
+    if password:
+        if len(password) < 8:
+            return jsonify({'success': False, 'error': 'Senha deve ter no mínimo 8 caracteres'}), 400
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         updates.append("password = ?")
         params.append(password_hash)
-        updates.append("requires_password_change = 0")
+        updates.append("requires_password_change = 1")
+        
+    if is_active is not None:
+        updates.append("is_active = ?")
+        params.append(1 if is_active else 0)
         
     if not updates:
         return jsonify({'success': False, 'error': 'Nenhum dado para atualizar'}), 400
@@ -534,7 +538,7 @@ def delete_user(user_id):
     conn.close()
     return jsonify({'success': True})
 
-@app.route('/api/profile', methods=['PUT'])
+@app.route('/api/profile', methods=['POST', 'PUT'])
 def update_profile():
     if 'user_id' not in session:
         return jsonify({'success': False, 'error': 'Não autorizado'}), 401

@@ -12,6 +12,13 @@
   -ms-overflow-style: none !important;
 }
 
+button,
+input,
+select,
+textarea {
+  font-family: inherit !important;
+}
+
 *::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
@@ -40,7 +47,7 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', 'Inter', sans-serif;
   background: var(--bg-deep);
   color: var(--text-primary);
   min-height: 100vh;
@@ -52,8 +59,8 @@ body {
    PAGE WRAPPER & HEADER
    ============================================================ */
 .page-wrapper {
-  max-width: 900px;
-  /* Reduced from 1120px for better density */
+  max-width: 1200px;
+  /* Increased from 900px for better use of horizontal space */
   margin: 0 auto;
   padding: 0 16px 60px;
   width: 100%;

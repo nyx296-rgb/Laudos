@@ -795,6 +795,7 @@ async function handleGlobalLogin() {
       currentUser.username = data.username || '';
       currentUser.role = data.role || '';
       currentUser.fullName = data.full_name || '';
+      currentUser.requires_password_change = !!data.requires_password_change;
       onLoginSuccess();
     } else {
       if (errorEl) {
